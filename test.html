@@ -445,6 +445,7 @@
                 courses: [],
                 enrollments: [],
                 pendingRequests: [],
+                allStudents: [],
             };
 
             document.addEventListener("DOMContentLoaded", function () {
@@ -483,6 +484,11 @@
                     appData.courses = [];
                 }
 
+                const savedStudents = localStorage.getItem("students");
+                if (savedStudents) {
+                    appData.allStudents = JSON.parse(savedStudents);
+                }
+
                 const savedEnrollments = localStorage.getItem("enrollments");
                 if (savedEnrollments) {
                     appData.enrollments = JSON.parse(savedEnrollments);
@@ -498,47 +504,12 @@
                 }
             }
 
-            function getStudentInfo() {
-                // Lấy thông tin từ currentUser
-                const user = appData.currentStudent;
-
-                // Kiểm tra xem có đầy đủ thông tin không
-                if (user.studentId && user.name && user.email) {
-                    return {
-                        studentId: user.studentId,
-                        fullName: user.name,
-                        email: user.email,
-                        username: user.username || user.studentId,
-                        highSchoolScore: user.highSchoolScore || 7.5, // Mặc định 7.5 cho tài khoản demo/social
-                    };
-                }
-
-                // Nếu không có, tìm trong localStorage students
-                const savedStudents = JSON.parse(
-                    localStorage.getItem("students") || "[]"
-                );
-                const student = savedStudents.find(
-                    (s) =>
-                        s.studentId === user.studentId ||
-                        s.username === user.username
-                );
-
-                if (student) {
-                    return student;
-                }
-
-                // Trả về thông tin từ currentUser (fallback)
-                return {
-                    studentId: user.studentId || user.username,
-                    fullName: user.name,
-                    email: user.email,
-                    username: user.username,
-                    highSchoolScore: user.highSchoolScore || 7.5,
-                };
-            }
-
             function displayStudentInfo() {
-                const student = getStudentInfo();
+                const student = appData.allStudents.find(
+                    (s) =>
+                        s.studentId === appData.currentStudent.studentId ||
+                        s.studentId === appData.currentStudent.username
+                );
 
                 if (student) {
                     document.getElementById("userName").textContent =
@@ -557,11 +528,15 @@
                         </div>
                         <div class="info-item">
                             <span class="info-label">Điểm THPT</span>
-                            <span class="info-value">${student.highSchoolScore}</span>
+                            <span class="info-value">${
+                                student.highSchoolScore
+                            }</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Tên đăng nhập</span>
-                            <span class="info-value">${student.username}</span>
+                            <span class="info-value">${
+                                student.username || student.studentId
+                            }</span>
                         </div>
                     `;
                     document.getElementById("studentInfo").innerHTML = infoHTML;
@@ -569,7 +544,11 @@
             }
 
             function displayEligibilityAlert() {
-                const student = getStudentInfo();
+                const student = appData.allStudents.find(
+                    (s) =>
+                        s.studentId === appData.currentStudent.studentId ||
+                        s.studentId === appData.currentStudent.username
+                );
 
                 if (!student) return;
 
@@ -595,7 +574,11 @@
                 const grid = document.getElementById("availableCoursesGrid");
                 grid.innerHTML = "";
 
-                const student = getStudentInfo();
+                const student = appData.allStudents.find(
+                    (s) =>
+                        s.studentId === appData.currentStudent.studentId ||
+                        s.studentId === appData.currentStudent.username
+                );
 
                 if (!student) {
                     grid.innerHTML =
@@ -621,12 +604,15 @@
                     const isEnrolled = myEnrollments.some(
                         (e) => e.courseCode === course.code
                     );
+
                     const hasPendingRequest = myPendingRequests.some(
                         (r) => r.courseCode === course.code
                     );
+
                     const currentEnrollments = appData.enrollments.filter(
                         (e) => e.courseCode === course.code
                     ).length;
+
                     const isFull = currentEnrollments >= course.maxStudents;
                     const canEnroll =
                         course.type === "remedial" || canRegisterOfficial;
@@ -704,7 +690,12 @@
                 const tbody = document.getElementById("pendingRequestsBody");
                 tbody.innerHTML = "";
 
-                const student = getStudentInfo();
+                const student = appData.allStudents.find(
+                    (s) =>
+                        s.studentId === appData.currentStudent.studentId ||
+                        s.studentId === appData.currentStudent.username
+                );
+
                 if (!student) return;
 
                 const myRequests = appData.pendingRequests.filter(
@@ -756,7 +747,12 @@
                 const tbody = document.getElementById("myEnrollmentsBody");
                 tbody.innerHTML = "";
 
-                const student = getStudentInfo();
+                const student = appData.allStudents.find(
+                    (s) =>
+                        s.studentId === appData.currentStudent.studentId ||
+                        s.studentId === appData.currentStudent.username
+                );
+
                 if (!student) return;
 
                 const myEnrollments = appData.enrollments.filter(
@@ -805,7 +801,11 @@
             }
 
             function requestEnrollment(courseCode) {
-                const student = getStudentInfo();
+                const student = appData.allStudents.find(
+                    (s) =>
+                        s.studentId === appData.currentStudent.studentId ||
+                        s.studentId === appData.currentStudent.username
+                );
 
                 if (!student) {
                     showNotification(
@@ -875,6 +875,7 @@
                 };
 
                 appData.pendingRequests.push(newRequest);
+
                 localStorage.setItem(
                     "pendingRequests",
                     JSON.stringify(appData.pendingRequests)
@@ -896,6 +897,7 @@
                 appData.pendingRequests = appData.pendingRequests.filter(
                     (r) => r.id !== requestId
                 );
+
                 localStorage.setItem(
                     "pendingRequests",
                     JSON.stringify(appData.pendingRequests)
@@ -914,6 +916,7 @@
                 appData.enrollments = appData.enrollments.filter(
                     (e) => e.id !== enrollmentId
                 );
+
                 localStorage.setItem(
                     "enrollments",
                     JSON.stringify(appData.enrollments)

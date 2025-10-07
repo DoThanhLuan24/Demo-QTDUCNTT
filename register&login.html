@@ -51,7 +51,6 @@
                 font-size: 0.9rem;
             }
 
-            /* Toggle between Login and Register */
             .mode-toggle {
                 display: flex;
                 gap: 1rem;
@@ -78,7 +77,6 @@
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
 
-            /* Forms */
             .form-view {
                 display: none;
             }
@@ -192,7 +190,6 @@
                 font-size: 0.8rem;
             }
 
-            /* Social Login Styles */
             .social-login {
                 margin-bottom: 1.5rem;
             }
@@ -219,17 +216,9 @@
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
 
-            .social-btn--google {
-                color: #333;
-            }
-
             .social-btn--google:hover {
                 border-color: #4285f4;
                 background: #f8f9ff;
-            }
-
-            .social-btn--microsoft {
-                color: #333;
             }
 
             .social-btn--microsoft:hover {
@@ -266,7 +255,6 @@
                 margin-left: 1rem;
             }
 
-            /* Success view */
             .success-view {
                 display: none;
                 text-align: center;
@@ -330,7 +318,6 @@
 
                 <!-- Login Form -->
                 <div class="form-view active" id="loginView">
-                    <!-- Social Login -->
                     <div class="social-login">
                         <button
                             class="social-btn social-btn--google"
@@ -407,7 +394,7 @@
                         </div>
                         <div class="demo-item">
                             <span><strong>Sinh viên:</strong></span>
-                            <span>Dùng mã SV sau khi đăng ký</span>
+                            <span>student / student123</span>
                         </div>
                     </div>
                 </div>
@@ -465,6 +452,21 @@
                                     required
                                 />
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label--required"
+                                >Điểm THPT (0-10)</label
+                            >
+                            <input
+                                class="form-input"
+                                type="number"
+                                id="highSchoolScore"
+                                min="0"
+                                max="10"
+                                step="0.1"
+                                required
+                                placeholder="Nhập điểm trung bình THPT"
+                            />
                         </div>
 
                         <h3 style="margin: 1.5rem 0; color: #667eea">
@@ -549,7 +551,6 @@
         </div>
 
         <script>
-            // System accounts
             const systemAccounts = [
                 {
                     id: 1,
@@ -558,6 +559,16 @@
                     role: "admin",
                     username: "admin",
                     password: "admin123",
+                },
+                {
+                    id: 2,
+                    name: "Nguyễn Văn A",
+                    email: "student@example.com",
+                    role: "student",
+                    username: "student",
+                    password: "student123",
+                    studentId: "SV001",
+                    highSchoolScore: 7.5,
                 },
             ];
 
@@ -606,6 +617,32 @@
                     localStorage.getItem("students") || "[]"
                 );
 
+                // Thêm tài khoản sinh viên demo vào localStorage nếu chưa có
+                const demoStudent = {
+                    id: 2,
+                    studentId: "SV001",
+                    fullName: "Nguyễn Văn A",
+                    birthDate: "2000-01-01",
+                    email: "student@example.com",
+                    phone: "0123456789",
+                    highSchoolScore: 7.5,
+                    username: "student",
+                    password: "student123",
+                    role: "student",
+                    createdAt: new Date().toISOString(),
+                };
+
+                const hasDemoStudent = registeredStudents.some(
+                    (s) => s.studentId === "SV001"
+                );
+                if (!hasDemoStudent) {
+                    registeredStudents.push(demoStudent);
+                    localStorage.setItem(
+                        "students",
+                        JSON.stringify(registeredStudents)
+                    );
+                }
+
                 const studentAccounts = registeredStudents.map((student) => ({
                     id: student.id,
                     name: student.fullName,
@@ -619,7 +656,6 @@
                 return [...systemAccounts, ...studentAccounts];
             }
 
-            // Login Form
             document
                 .getElementById("loginForm")
                 .addEventListener("submit", function (e) {
@@ -654,12 +690,8 @@
 
                         setTimeout(() => {
                             if (user.role === "admin") {
-                                alert("Chuyển đến trang Admin (admin.html)");
                                 window.location.href = "admin.html";
                             } else {
-                                alert(
-                                    "Chuyển đến trang Sinh viên (student.html)"
-                                );
                                 window.location.href = "student.html";
                             }
                         }, 1000);
@@ -668,7 +700,6 @@
                     }
                 });
 
-            // Social Login - Google
             function loginWithGoogle() {
                 showAlert("Đang kết nối với Google...", "success");
 
@@ -690,13 +721,11 @@
                     showAlert(`Đăng nhập thành công với Google!`, "success");
 
                     setTimeout(() => {
-                        alert("Chuyển đến trang Sinh viên (student.html)");
                         window.location.href = "student.html";
                     }, 1000);
                 }, 1500);
             }
 
-            // Social Login - Microsoft
             function loginWithMicrosoft() {
                 showAlert("Đang kết nối với Microsoft...", "success");
 
@@ -715,12 +744,11 @@
                     showAlert(`Đăng nhập thành công với Microsoft!`, "success");
 
                     setTimeout(() => {
-                        alert("Chuyển đến trang Sinh viên (student.html)");
+                        window.location.href = "student.html";
                     }, 1000);
                 }, 1500);
             }
 
-            // Register Form
             document
                 .getElementById("registerForm")
                 .addEventListener("submit", function (e) {
@@ -733,6 +761,9 @@
                         document.getElementById("birthDate").value;
                     const email = document.getElementById("email").value.trim();
                     const phone = document.getElementById("phone").value.trim();
+                    const highSchoolScore = parseFloat(
+                        document.getElementById("highSchoolScore").value
+                    );
                     const username = document
                         .getElementById("regUsername")
                         .value.trim();
@@ -743,7 +774,6 @@
                         .getElementById("confirmPassword")
                         .value.trim();
 
-                    // Validation
                     if (
                         !fullName ||
                         !birthDate ||
@@ -751,9 +781,15 @@
                         !phone ||
                         !username ||
                         !password ||
-                        !confirmPassword
+                        !confirmPassword ||
+                        isNaN(highSchoolScore)
                     ) {
                         showAlert("Vui lòng điền đầy đủ thông tin!");
+                        return;
+                    }
+
+                    if (highSchoolScore < 0 || highSchoolScore > 10) {
+                        showAlert("Điểm THPT phải từ 0 đến 10!");
                         return;
                     }
 
@@ -772,14 +808,12 @@
                         return;
                     }
 
-                    // Check existing username
                     const existingUsers = getAllUsers();
                     if (existingUsers.find((u) => u.username === username)) {
                         showAlert("Tên đăng nhập đã tồn tại!");
                         return;
                     }
 
-                    // Create student data
                     const studentId = "SV" + Date.now().toString().slice(-6);
                     const studentData = {
                         id: Date.now(),
@@ -788,20 +822,19 @@
                         birthDate: birthDate,
                         email: email,
                         phone: phone,
+                        highSchoolScore: highSchoolScore,
                         username: username,
                         password: password,
                         role: "student",
                         createdAt: new Date().toISOString(),
                     };
 
-                    // Save to storage
                     const students = JSON.parse(
                         localStorage.getItem("students") || "[]"
                     );
                     students.push(studentData);
                     localStorage.setItem("students", JSON.stringify(students));
 
-                    // Show success
                     document.getElementById("displayStudentId").textContent =
                         studentId;
                     document.getElementById("displayUsername").textContent =
