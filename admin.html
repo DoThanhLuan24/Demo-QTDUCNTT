@@ -4,384 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Admin - Quản lý Lớp Tiếng Anh</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family: "Segoe UI", sans-serif;
-                background: #f5f7fa;
-                color: #333;
-            }
-
-            .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 1rem 0;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            }
-
-            .header__content {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 0 1rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .header__logo {
-                font-size: 1.5rem;
-                font-weight: bold;
-            }
-
-            .btn-logout {
-                background: rgba(255, 255, 255, 0.2);
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                color: white;
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                cursor: pointer;
-                transition: all 0.3s;
-            }
-
-            .btn-logout:hover {
-                background: rgba(255, 255, 255, 0.3);
-            }
-
-            .container {
-                max-width: 1200px;
-                margin: 2rem auto;
-                padding: 0 1rem;
-            }
-
-            .stats {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1.5rem;
-                margin-bottom: 2rem;
-            }
-
-            .stat-card {
-                background: white;
-                padding: 1.5rem;
-                border-radius: 12px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-                border-left: 4px solid #667eea;
-            }
-
-            .stat-card__number {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #667eea;
-                margin-bottom: 0.5rem;
-            }
-
-            .stat-card__label {
-                color: #666;
-                font-size: 0.875rem;
-            }
-
-            .section {
-                background: white;
-                padding: 2rem;
-                border-radius: 12px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-                margin-bottom: 2rem;
-            }
-
-            .section__title {
-                font-size: 1.5rem;
-                margin-bottom: 1.5rem;
-                color: #333;
-            }
-
-            .form {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .form__group {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .form__label {
-                margin-bottom: 0.5rem;
-                font-weight: 600;
-                font-size: 0.875rem;
-                color: #555;
-            }
-
-            .form__input,
-            .form__select {
-                padding: 0.75rem;
-                border: 2px solid #e1e5f2;
-                border-radius: 8px;
-                font-size: 0.875rem;
-                transition: border-color 0.3s;
-            }
-
-            .form__input:focus,
-            .form__select:focus {
-                outline: none;
-                border-color: #667eea;
-            }
-
-            .btn {
-                padding: 0.75rem 1.5rem;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-weight: 600;
-                transition: all 0.3s;
-            }
-
-            .btn--primary {
-                background: #667eea;
-                color: white;
-            }
-
-            .btn--success {
-                background: #48bb78;
-                color: white;
-            }
-
-            .btn--danger {
-                background: #f56565;
-                color: white;
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-            }
-
-            .btn--info {
-                background: #4299e1;
-                color: white;
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-            }
-
-            .btn--warning {
-                background: #ed8936;
-                color: white;
-                padding: 0.5rem 1rem;
-                font-size: 0.875rem;
-            }
-
-            .btn:hover {
-                opacity: 0.9;
-                transform: translateY(-2px);
-            }
-
-            .table {
-                width: 100%;
-                border-collapse: collapse;
-                overflow: hidden;
-                border-radius: 8px;
-            }
-
-            .table__head {
-                background: #667eea;
-                color: white;
-            }
-
-            .table th,
-            .table td {
-                padding: 1rem;
-                text-align: left;
-                border-bottom: 1px solid #f1f3f4;
-            }
-
-            .table tbody tr:hover {
-                background: #f8f9ff;
-            }
-
-            .badge {
-                display: inline-block;
-                padding: 0.25rem 0.75rem;
-                border-radius: 12px;
-                font-size: 0.75rem;
-                font-weight: 600;
-            }
-
-            .badge--remedial {
-                background: #fed7d7;
-                color: #c53030;
-            }
-
-            .badge--official {
-                background: #bee3f8;
-                color: #2c5282;
-            }
-
-            .badge--active {
-                background: #c6f6d5;
-                color: #22543d;
-            }
-
-            .badge--full {
-                background: #fed7d7;
-                color: #c53030;
-            }
-
-            .actions {
-                display: flex;
-                gap: 0.5rem;
-                flex-wrap: wrap;
-            }
-
-            .alert {
-                padding: 1rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border-left: 4px solid;
-                animation: slideIn 0.3s;
-            }
-
-            @keyframes slideIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(-10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .alert--success {
-                background: #d1fae5;
-                color: #065f46;
-                border-color: #10b981;
-            }
-
-            .alert--error {
-                background: #fee2e2;
-                color: #991b1b;
-                border-color: #ef4444;
-            }
-
-            /* Modal */
-            .modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .modal.active {
-                display: flex;
-            }
-
-            .modal__content {
-                background: white;
-                padding: 2rem;
-                border-radius: 12px;
-                max-width: 600px;
-                width: 90%;
-                max-height: 80vh;
-                overflow-y: auto;
-                animation: modalSlideIn 0.3s;
-            }
-
-            @keyframes modalSlideIn {
-                from {
-                    opacity: 0;
-                    transform: scale(0.9);
-                }
-                to {
-                    opacity: 1;
-                    transform: scale(1);
-                }
-            }
-
-            .modal__header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1.5rem;
-            }
-
-            .modal__title {
-                font-size: 1.5rem;
-                color: #333;
-            }
-
-            .modal__close {
-                background: none;
-                border: none;
-                font-size: 1.5rem;
-                cursor: pointer;
-                color: #999;
-            }
-
-            .modal__close:hover {
-                color: #333;
-            }
-
-            .student-list {
-                max-height: 300px;
-                overflow-y: auto;
-                border: 2px solid #e1e5f2;
-                border-radius: 8px;
-                padding: 1rem;
-            }
-
-            .student-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.75rem;
-                border-bottom: 1px solid #f1f3f4;
-            }
-
-            .student-item:last-child {
-                border-bottom: none;
-            }
-
-            .student-info {
-                flex: 1;
-            }
-
-            .student-name {
-                font-weight: 600;
-                color: #333;
-            }
-
-            .student-id {
-                font-size: 0.875rem;
-                color: #666;
-            }
-
-            @media (max-width: 768px) {
-                .stats {
-                    grid-template-columns: 1fr;
-                }
-
-                .form {
-                    grid-template-columns: 1fr;
-                }
-
-                .table {
-                    font-size: 0.75rem;
-                }
-
-                .actions {
-                    flex-direction: column;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="./admin/admin.css" />
     </head>
     <body>
         <header class="header">
@@ -409,7 +32,11 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-card__number" id="totalEnrollments">0</div>
-                    <div class="stat-card__label">Lượt đăng ký</div>
+                    <div class="stat-card__label">Tổng đăng ký</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__number" id="totalPending">0</div>
+                    <div class="stat-card__label">Chờ duyệt</div>
                 </div>
             </div>
 
@@ -507,22 +134,22 @@
                 <h2 class="section__title">Thêm sinh viên</h2>
                 <form class="form" id="studentForm">
                     <div class="form__group">
-                        <label class="form__label">Mã sinh viên</label>
-                        <input
-                            class="form__input"
-                            type="text"
-                            id="studentId"
-                            placeholder="VD: SV001"
-                            required
-                        />
-                    </div>
-                    <div class="form__group">
                         <label class="form__label">Họ và tên</label>
                         <input
                             class="form__input"
                             type="text"
                             id="studentName"
                             placeholder="VD: Nguyễn Văn A"
+                            required
+                        />
+                    </div>
+                    <div class="form__group">
+                        <label class="form__label">Tên đăng nhập</label>
+                        <input
+                            class="form__input"
+                            type="text"
+                            id="userAccount"
+                            placeholder="VD: tendangnhap"
                             required
                         />
                     </div>
@@ -586,7 +213,95 @@
                     <tbody id="studentsTableBody">
                         <tr>
                             <td
-                                colspan="6"
+                                colspan="7"
+                                style="text-align: center; color: #999"
+                            >
+                                Đang tải dữ liệu...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Yêu cầu Đăng ký Chờ Duyệt -->
+            <div class="section">
+                <h2 class="section__title">Yêu cầu đăng ký chờ duyệt</h2>
+                <table class="table">
+                    <thead class="table__head">
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã SV</th>
+                            <th>Họ tên</th>
+                            <th>Mã lớp</th>
+                            <th>Tên lớp</th>
+                            <th>Loại lớp</th>
+                            <th>Ngày gửi yêu cầu</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingRequestsBody">
+                        <tr>
+                            <td
+                                colspan="8"
+                                style="text-align: center; color: #999"
+                            >
+                                Đang tải dữ liệu...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Danh sách Đăng ký Đã Duyệt -->
+            <div class="section">
+                <h2 class="section__title">Danh sách đăng ký đã duyệt</h2>
+                <div
+                    style="
+                        margin-bottom: 1rem;
+                        display: flex;
+                        gap: 1rem;
+                        flex-wrap: wrap;
+                    "
+                >
+                    <div class="form__group" style="flex: 1; min-width: 200px">
+                        <label class="form__label">Lọc theo lớp</label>
+                        <select
+                            class="form__select"
+                            id="filterCourse"
+                            onchange="renderEnrollments()"
+                        >
+                            <option value="">-- Tất cả lớp học --</option>
+                        </select>
+                    </div>
+                    <div class="form__group" style="flex: 1; min-width: 200px">
+                        <label class="form__label">Lọc theo sinh viên</label>
+                        <input
+                            class="form__input"
+                            type="text"
+                            id="filterStudent"
+                            placeholder="Tìm theo tên hoặc mã SV"
+                            onkeyup="renderEnrollments()"
+                        />
+                    </div>
+                </div>
+                <table class="table">
+                    <thead class="table__head">
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã SV</th>
+                            <th>Họ tên</th>
+                            <th>Mã lớp</th>
+                            <th>Tên lớp</th>
+                            <th>Loại lớp</th>
+                            <th>Tên giảng viên</th>
+                            <th>Ngày đăng ký</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrollmentsTableBody">
+                        <tr>
+                            <td
+                                colspan="8"
                                 style="text-align: center; color: #999"
                             >
                                 Đang tải dữ liệu...
@@ -782,823 +497,6 @@
             </div>
         </div>
 
-        <script>
-            // ============================================
-            // DATA MANAGEMENT
-            // ============================================
-            let appData = {
-                courses: [],
-                students: [],
-                enrollments: [],
-                currentUser: null,
-                editingCourseId: null,
-                managingCourseId: null,
-            };
-
-            // ============================================
-            // INITIALIZATION
-            // ============================================
-            document.addEventListener("DOMContentLoaded", function () {
-                console.log("🚀 Khởi động ứng dụng Admin...");
-                checkAuth();
-                loadData();
-                updateStats();
-                renderCourses();
-                renderStudents();
-
-                // Event Listeners
-                document
-                    .getElementById("courseForm")
-                    .addEventListener("submit", handleAddCourse);
-                document
-                    .getElementById("editCourseForm")
-                    .addEventListener("submit", handleEditCourse);
-                document
-                    .getElementById("studentForm")
-                    .addEventListener("submit", handleAddStudent);
-                document
-                    .getElementById("editStudentForm")
-                    .addEventListener("submit", handleEditStudent);
-
-                console.log("✅ Ứng dụng đã sẵn sàng!");
-            });
-
-            // ============================================
-            // AUTHENTICATION
-            // ============================================
-            function checkAuth() {
-                const user = localStorage.getItem("currentUser");
-                if (!user) {
-                    alert("⚠️ Vui lòng đăng nhập!");
-                    window.location.href = "register&login.html";
-                    return;
-                }
-
-                const userData = JSON.parse(user);
-                if (userData.role !== "admin") {
-                    alert("❌ Bạn không có quyền truy cập trang này!");
-                    window.location.href = "register&login.html";
-                    return;
-                }
-
-                appData.currentUser = userData;
-                document.getElementById("userName").textContent =
-                    userData.name || userData.email;
-                console.log("✅ Xác thực thành công:", userData.email);
-            }
-
-            function logout() {
-                if (confirm("Bạn có chắc muốn đăng xuất?")) {
-                    localStorage.removeItem("currentUser");
-                    console.log("👋 Đăng xuất thành công!");
-                    window.location.href = "register&login.html";
-                }
-            }
-
-            // ============================================
-            // DATA LOADING & SAVING
-            // ============================================
-            function loadData() {
-                console.log("📂 Đang tải dữ liệu...");
-
-                // Load Courses
-                const savedCourses = localStorage.getItem("courses");
-                if (savedCourses) {
-                    appData.courses = JSON.parse(savedCourses);
-                    console.log(`✅ Đã tải ${appData.courses.length} lớp học`);
-                } else {
-                    // Dữ liệu mẫu
-                    appData.courses = [
-                        {
-                            id: 1,
-                            name: "Tiếng Anh Tăng Cường Cơ Bản",
-                            code: "ENG_TC_101",
-                            instructor: "Ms. Johnson",
-                            type: "remedial",
-                            maxStudents: 30,
-                        },
-                        {
-                            id: 2,
-                            name: "Tiếng Anh Chính Thức A1",
-                            code: "ENG_CT_A1",
-                            instructor: "Mr. Smith",
-                            type: "official",
-                            maxStudents: 35,
-                        },
-                    ];
-                    saveCourses();
-                    console.log("✅ Đã tạo dữ liệu mẫu cho lớp học");
-                }
-
-                // Load Students
-                const savedStudents = localStorage.getItem("students");
-                if (savedStudents) {
-                    appData.students = JSON.parse(savedStudents);
-                    console.log(
-                        `✅ Đã tải ${appData.students.length} sinh viên`
-                    );
-                } else {
-                    appData.students = [];
-                    console.log("ℹ️ Chưa có sinh viên nào");
-                }
-
-                // Load Enrollments
-                const savedEnrollments = localStorage.getItem("enrollments");
-                if (savedEnrollments) {
-                    appData.enrollments = JSON.parse(savedEnrollments);
-                    console.log(
-                        `✅ Đã tải ${appData.enrollments.length} đăng ký`
-                    );
-                } else {
-                    appData.enrollments = [];
-                    console.log("ℹ️ Chưa có đăng ký nào");
-                }
-            }
-
-            function saveCourses() {
-                localStorage.setItem(
-                    "courses",
-                    JSON.stringify(appData.courses)
-                );
-                console.log("💾 Đã lưu danh sách lớp học");
-            }
-
-            function saveStudents() {
-                localStorage.setItem(
-                    "students",
-                    JSON.stringify(appData.students)
-                );
-
-                // Đồng bộ với users
-                const users = JSON.parse(localStorage.getItem("users") || "[]");
-                appData.students.forEach((student) => {
-                    const userIndex = users.findIndex(
-                        (u) => u.studentId === student.studentId
-                    );
-                    if (userIndex !== -1) {
-                        users[userIndex] = student;
-                    }
-                });
-                localStorage.setItem("users", JSON.stringify(users));
-
-                console.log("💾 Đã lưu danh sách sinh viên");
-            }
-
-            function saveEnrollments() {
-                localStorage.setItem(
-                    "enrollments",
-                    JSON.stringify(appData.enrollments)
-                );
-                console.log("💾 Đã lưu danh sách đăng ký");
-            }
-
-            // ============================================
-            // STATISTICS
-            // ============================================
-            function updateStats() {
-                document.getElementById("totalCourses").textContent =
-                    appData.courses.length;
-                document.getElementById("totalStudents").textContent =
-                    appData.students.length;
-                document.getElementById("totalEnrollments").textContent =
-                    appData.enrollments.length;
-            }
-
-            // ============================================
-            // COURSE MANAGEMENT
-            // ============================================
-            function renderCourses() {
-                const tbody = document.getElementById("coursesTableBody");
-                tbody.innerHTML = "";
-
-                if (appData.courses.length === 0) {
-                    tbody.innerHTML =
-                        '<tr><td colspan="7" style="text-align: center; color: #999;">Chưa có lớp học nào</td></tr>';
-                    return;
-                }
-
-                appData.courses.forEach((course) => {
-                    const enrolledCount = appData.enrollments.filter(
-                        (e) => e.courseCode === course.code
-                    ).length;
-                    const isFull = enrolledCount >= course.maxStudents;
-
-                    const row = `
-                    <tr>
-                        <td style="font-weight: 600; color: #667eea;">${
-                            course.code
-                        }</td>
-                        <td>${course.name}</td>
-                        <td><span class="badge badge--${course.type}">${
-                        course.type === "remedial" ? "Tăng Cường" : "Chính Thức"
-                    }</span></td>
-                        <td>${course.instructor}</td>
-                        <td>${enrolledCount}/${course.maxStudents}</td>
-                        <td><span class="badge badge--${
-                            isFull ? "full" : "active"
-                        }">${isFull ? "Đầy" : "Còn chỗ"}</span></td>
-                        <td>
-                            <div class="actions">
-                                <button class="btn btn--warning" onclick="openManageStudents(${
-                                    course.id
-                                })">👥 Quản lý SV</button>
-                                <button class="btn btn--info" onclick="openEditCourse(${
-                                    course.id
-                                })">✏️ Sửa</button>
-                                <button class="btn btn--danger" onclick="deleteCourse(${
-                                    course.id
-                                })">🗑️ Xóa</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                    tbody.innerHTML += row;
-                });
-            }
-
-            function handleAddCourse(e) {
-                e.preventDefault();
-
-                const courseName = document
-                    .getElementById("courseName")
-                    .value.trim();
-                const courseCode = document
-                    .getElementById("courseCode")
-                    .value.trim();
-                const courseType = document.getElementById("courseType").value;
-                const courseInstructor = document
-                    .getElementById("courseInstructor")
-                    .value.trim();
-                const courseMaxStudents = parseInt(
-                    document.getElementById("courseMaxStudents").value
-                );
-
-                // Validation
-                if (appData.courses.find((c) => c.code === courseCode)) {
-                    showAlert("❌ Mã lớp đã tồn tại!", "error");
-                    return;
-                }
-
-                const newCourse = {
-                    id: Date.now(),
-                    name: courseName,
-                    code: courseCode,
-                    type: courseType,
-                    instructor: courseInstructor,
-                    maxStudents: courseMaxStudents,
-                };
-
-                appData.courses.push(newCourse);
-                saveCourses();
-                document.getElementById("courseForm").reset();
-                updateStats();
-                renderCourses();
-                showAlert("✅ Thêm lớp học thành công!", "success");
-                console.log("➕ Đã thêm lớp:", courseCode);
-            }
-
-            function openEditCourse(id) {
-                const course = appData.courses.find((c) => c.id === id);
-                if (!course) return;
-
-                appData.editingCourseId = id;
-                document.getElementById("editCourseId").value = course.id;
-                document.getElementById("editCourseName").value = course.name;
-                document.getElementById("editCourseCode").value = course.code;
-                document.getElementById("editCourseType").value = course.type;
-                document.getElementById("editCourseInstructor").value =
-                    course.instructor;
-                document.getElementById("editCourseMaxStudents").value =
-                    course.maxStudents;
-
-                document
-                    .getElementById("editCourseModal")
-                    .classList.add("active");
-            }
-
-            function closeEditModal() {
-                document
-                    .getElementById("editCourseModal")
-                    .classList.remove("active");
-                appData.editingCourseId = null;
-            }
-
-            function handleEditCourse(e) {
-                e.preventDefault();
-
-                const courseId = parseInt(
-                    document.getElementById("editCourseId").value
-                );
-                const courseIndex = appData.courses.findIndex(
-                    (c) => c.id === courseId
-                );
-
-                if (courseIndex === -1) return;
-
-                const oldCode = appData.courses[courseIndex].code;
-                const newCode = document
-                    .getElementById("editCourseCode")
-                    .value.trim();
-
-                // Kiểm tra trùng mã (nếu thay đổi)
-                if (
-                    newCode !== oldCode &&
-                    appData.courses.find((c) => c.code === newCode)
-                ) {
-                    showAlert("❌ Mã lớp đã tồn tại!", "error");
-                    return;
-                }
-
-                const updatedCourse = {
-                    ...appData.courses[courseIndex],
-                    name: document
-                        .getElementById("editCourseName")
-                        .value.trim(),
-                    code: newCode,
-                    type: document.getElementById("editCourseType").value,
-                    instructor: document
-                        .getElementById("editCourseInstructor")
-                        .value.trim(),
-                    maxStudents: parseInt(
-                        document.getElementById("editCourseMaxStudents").value
-                    ),
-                };
-
-                // Cập nhật mã lớp trong enrollments nếu thay đổi
-                if (oldCode !== newCode) {
-                    appData.enrollments.forEach((enrollment) => {
-                        if (enrollment.courseCode === oldCode) {
-                            enrollment.courseCode = newCode;
-                        }
-                    });
-                    saveEnrollments();
-                }
-
-                appData.courses[courseIndex] = updatedCourse;
-                saveCourses();
-                renderCourses();
-                closeEditModal();
-                showAlert("✅ Cập nhật lớp học thành công!", "success");
-                console.log("✏️ Đã cập nhật lớp:", newCode);
-            }
-
-            function deleteCourse(id) {
-                const course = appData.courses.find((c) => c.id === id);
-                if (!course) return;
-
-                const enrollmentCount = appData.enrollments.filter(
-                    (e) => e.courseCode === course.code
-                ).length;
-
-                const confirmMessage =
-                    enrollmentCount > 0
-                        ? `Xóa lớp "${course.name}"?\n\nLớp này có ${enrollmentCount} sinh viên đăng ký. Tất cả đăng ký sẽ bị xóa.`
-                        : `Xóa lớp "${course.name}"?`;
-
-                if (confirm(confirmMessage)) {
-                    appData.courses = appData.courses.filter(
-                        (c) => c.id !== id
-                    );
-                    appData.enrollments = appData.enrollments.filter(
-                        (e) => e.courseCode !== course.code
-                    );
-
-                    saveCourses();
-                    saveEnrollments();
-                    updateStats();
-                    renderCourses();
-                    showAlert("✅ Đã xóa lớp học!", "success");
-                    console.log("🗑️ Đã xóa lớp:", course.code);
-                }
-            }
-
-            // ============================================
-            // STUDENT MANAGEMENT
-            // ============================================
-            function renderStudents() {
-                const tbody = document.getElementById("studentsTableBody");
-                tbody.innerHTML = "";
-
-                if (appData.students.length === 0) {
-                    tbody.innerHTML =
-                        '<tr><td colspan="6" style="text-align: center; color: #999;">Chưa có sinh viên nào</td></tr>';
-                    return;
-                }
-
-                appData.students.forEach((student) => {
-                    const canRegisterOfficial = student.highSchoolScore >= 5.0;
-                    const row = `
-                    <tr>
-                        <td style="font-weight: 600; color: #667eea;">${
-                            student.studentId
-                        }</td>
-                        <td>${student.fullName}</td>
-                        <td>${student.username}</td>
-                        <td>${student.email}</td>
-                        <td>${student.highSchoolScore || "N/A"}</td>
-                        <td><span class="badge badge--${
-                            canRegisterOfficial ? "active" : "remedial"
-                        }">${
-                        canRegisterOfficial
-                            ? "✅ Đủ điều kiện"
-                            : "⚠️ Cần Tăng Cường"
-                    }</span></td>
-                        <td>
-                            <div class="actions">
-                                <button class="btn btn--info" onclick="openEditStudent('${
-                                    student.studentId
-                                }')">✏️ Sửa</button>
-                                <button class="btn btn--danger" onclick="deleteStudent('${
-                                    student.studentId
-                                }')">🗑️ Xóa</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                    tbody.innerHTML += row;
-                });
-            }
-
-            function handleAddStudent(e) {
-                e.preventDefault();
-
-                const studentId = document
-                    .getElementById("studentId")
-                    .value.trim();
-                const fullName = document
-                    .getElementById("studentName")
-                    .value.trim();
-                const email = document
-                    .getElementById("studentEmail")
-                    .value.trim();
-                const highSchoolScore = parseFloat(
-                    document.getElementById("studentScore").value
-                );
-                const password =
-                    document.getElementById("studentPassword").value;
-
-                // Validation
-                if (appData.students.find((s) => s.studentId === studentId)) {
-                    showAlert("❌ Mã sinh viên đã tồn tại!", "error");
-                    return;
-                }
-
-                if (appData.students.find((s) => s.email === email)) {
-                    showAlert("❌ Email đã được sử dụng!", "error");
-                    return;
-                }
-
-                const newStudent = {
-                    studentId,
-                    fullName,
-                    email,
-                    password,
-                    highSchoolScore,
-                    role: "student",
-                    registeredCourses: [],
-                };
-
-                appData.students.push(newStudent);
-                saveStudents();
-
-                // Thêm vào danh sách users
-                const users = JSON.parse(localStorage.getItem("users") || "[]");
-                users.push(newStudent);
-                localStorage.setItem("users", JSON.stringify(users));
-
-                document.getElementById("studentForm").reset();
-                updateStats();
-                renderStudents();
-                showAlert("✅ Thêm sinh viên thành công!", "success");
-                console.log("➕ Đã thêm sinh viên:", studentId);
-            }
-
-            function openEditStudent(studentId) {
-                const student = appData.students.find(
-                    (s) => s.studentId === studentId
-                );
-                if (!student) return;
-
-                document.getElementById("editStudentOriginalId").value =
-                    student.studentId;
-                document.getElementById("editStudentId").value =
-                    student.studentId;
-                document.getElementById("editStudentName").value =
-                    student.fullName;
-                document.getElementById("editStudentEmail").value =
-                    student.email;
-                document.getElementById("editStudentScore").value =
-                    student.highSchoolScore;
-                document.getElementById("editStudentPassword").value = "";
-
-                document
-                    .getElementById("editStudentModal")
-                    .classList.add("active");
-            }
-
-            function closeEditStudentModal() {
-                document
-                    .getElementById("editStudentModal")
-                    .classList.remove("active");
-            }
-
-            function handleEditStudent(e) {
-                e.preventDefault();
-
-                const originalId = document.getElementById(
-                    "editStudentOriginalId"
-                ).value;
-                const studentIndex = appData.students.findIndex(
-                    (s) => s.studentId === originalId
-                );
-
-                if (studentIndex === -1) return;
-
-                const newStudentId = document
-                    .getElementById("editStudentId")
-                    .value.trim();
-                const newEmail = document
-                    .getElementById("editStudentEmail")
-                    .value.trim();
-                const newPassword = document.getElementById(
-                    "editStudentPassword"
-                ).value;
-
-                // Validation
-                if (
-                    newStudentId !== originalId &&
-                    appData.students.find((s) => s.studentId === newStudentId)
-                ) {
-                    showAlert("❌ Mã sinh viên đã tồn tại!", "error");
-                    return;
-                }
-
-                if (
-                    newEmail !== appData.students[studentIndex].email &&
-                    appData.students.find((s) => s.email === newEmail)
-                ) {
-                    showAlert("❌ Email đã được sử dụng!", "error");
-                    return;
-                }
-
-                // Cập nhật enrollments nếu thay đổi mã sinh viên
-                if (newStudentId !== originalId) {
-                    appData.enrollments.forEach((enrollment) => {
-                        if (enrollment.studentId === originalId) {
-                            enrollment.studentId = newStudentId;
-                        }
-                    });
-                    saveEnrollments();
-                }
-
-                const updatedStudent = {
-                    ...appData.students[studentIndex],
-                    studentId: newStudentId,
-                    fullName: document
-                        .getElementById("editStudentName")
-                        .value.trim(),
-                    email: newEmail,
-                    highSchoolScore: parseFloat(
-                        document.getElementById("editStudentScore").value
-                    ),
-                };
-
-                // Cập nhật mật khẩu nếu có
-                if (newPassword) {
-                    updatedStudent.password = newPassword;
-                }
-
-                appData.students[studentIndex] = updatedStudent;
-                saveStudents();
-
-                // Cập nhật trong users
-                const users = JSON.parse(localStorage.getItem("users") || "[]");
-                const userIndex = users.findIndex(
-                    (u) =>
-                        u.studentId === originalId ||
-                        u.email === appData.students[studentIndex].email
-                );
-                if (userIndex !== -1) {
-                    users[userIndex] = updatedStudent;
-                    localStorage.setItem("users", JSON.stringify(users));
-                }
-
-                renderStudents();
-                closeEditStudentModal();
-                showAlert("✅ Cập nhật sinh viên thành công!", "success");
-                console.log("✏️ Đã cập nhật sinh viên:", newStudentId);
-            }
-
-            function deleteStudent(studentId) {
-                const student = appData.students.find(
-                    (s) => s.studentId === studentId
-                );
-                if (!student) return;
-
-                const enrollmentCount = appData.enrollments.filter(
-                    (e) => e.studentId === studentId
-                ).length;
-
-                const confirmMessage =
-                    enrollmentCount > 0
-                        ? `Xóa sinh viên "${student.fullName}"?\n\nSinh viên này đang đăng ký ${enrollmentCount} lớp học. Tất cả đăng ký sẽ bị xóa.`
-                        : `Xóa sinh viên "${student.fullName}"?`;
-
-                if (confirm(confirmMessage)) {
-                    appData.students = appData.students.filter(
-                        (s) => s.studentId !== studentId
-                    );
-                    saveStudents();
-
-                    appData.enrollments = appData.enrollments.filter(
-                        (e) => e.studentId !== studentId
-                    );
-                    saveEnrollments();
-
-                    // Xóa khỏi users
-                    const users = JSON.parse(
-                        localStorage.getItem("users") || "[]"
-                    );
-                    const updatedUsers = users.filter(
-                        (u) => u.studentId !== studentId
-                    );
-                    localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-                    updateStats();
-                    renderStudents();
-                    renderCourses();
-                    showAlert("✅ Đã xóa sinh viên!", "success");
-                    console.log("🗑️ Đã xóa sinh viên:", studentId);
-                }
-            }
-
-            // ============================================
-            // ENROLLMENT MANAGEMENT
-            // ============================================
-            function openManageStudents(courseId) {
-                const course = appData.courses.find((c) => c.id === courseId);
-                if (!course) return;
-
-                appData.managingCourseId = courseId;
-                document.getElementById("modalCourseName").textContent =
-                    course.name;
-
-                renderEnrolledStudents(course.code);
-                populateAvailableStudents(course.code);
-
-                document
-                    .getElementById("manageStudentsModal")
-                    .classList.add("active");
-            }
-
-            function closeModal() {
-                document
-                    .getElementById("manageStudentsModal")
-                    .classList.remove("active");
-                appData.managingCourseId = null;
-            }
-
-            function renderEnrolledStudents(courseCode) {
-                const container = document.getElementById("enrolledStudents");
-                const enrolled = appData.enrollments.filter(
-                    (e) => e.courseCode === courseCode
-                );
-
-                document.getElementById("enrolledCount").textContent =
-                    enrolled.length;
-
-                if (enrolled.length === 0) {
-                    container.innerHTML =
-                        '<p style="text-align: center; color: #999;">Chưa có sinh viên nào</p>';
-                    return;
-                }
-
-                container.innerHTML = enrolled
-                    .map((enrollment) => {
-                        const student = appData.students.find(
-                            (s) => s.studentId === enrollment.studentId
-                        );
-                        if (!student) return "";
-
-                        return `
-                    <div class="student-item">
-                        <div class="student-info">
-                            <div class="student-name">${student.fullName}</div>
-                            <div class="student-id">Mã SV: ${student.studentId} | Email: ${student.email}</div>
-                        </div>
-                        <button class="btn btn--danger" onclick="removeStudentFromCourse('${student.studentId}', '${courseCode}')">
-                            🗑️ Xóa
-                        </button>
-                    </div>
-                `;
-                    })
-                    .join("");
-            }
-
-            function populateAvailableStudents(courseCode) {
-                const select = document.getElementById("studentToAdd");
-                const enrolledIds = appData.enrollments
-                    .filter((e) => e.courseCode === courseCode)
-                    .map((e) => e.studentId);
-
-                const available = appData.students.filter(
-                    (s) => !enrolledIds.includes(s.studentId)
-                );
-
-                select.innerHTML =
-                    '<option value="">-- Chọn sinh viên --</option>' +
-                    available
-                        .map(
-                            (s) =>
-                                `<option value="${s.studentId}">${s.fullName} (${s.studentId}) - Điểm: ${s.highSchoolScore}</option>`
-                        )
-                        .join("");
-            }
-
-            function addStudentToCourse() {
-                const studentId = document.getElementById("studentToAdd").value;
-                if (!studentId) {
-                    showAlert("⚠️ Vui lòng chọn sinh viên!", "error");
-                    return;
-                }
-
-                const course = appData.courses.find(
-                    (c) => c.id === appData.managingCourseId
-                );
-                if (!course) return;
-
-                const enrolledCount = appData.enrollments.filter(
-                    (e) => e.courseCode === course.code
-                ).length;
-
-                if (enrolledCount >= course.maxStudents) {
-                    showAlert("❌ Lớp đã đầy!", "error");
-                    return;
-                }
-
-                const newEnrollment = {
-                    id: Date.now(),
-                    studentId: studentId,
-                    courseCode: course.code,
-                    enrollDate: new Date().toISOString(),
-                };
-
-                appData.enrollments.push(newEnrollment);
-                saveEnrollments();
-                updateStats();
-                renderCourses();
-                renderEnrolledStudents(course.code);
-                populateAvailableStudents(course.code);
-                showAlert("✅ Đã thêm sinh viên vào lớp!", "success");
-                console.log(
-                    "➕ Đã thêm sinh viên vào lớp:",
-                    studentId,
-                    "->",
-                    course.code
-                );
-            }
-
-            function removeStudentFromCourse(studentId, courseCode) {
-                if (confirm("Xóa sinh viên khỏi lớp?")) {
-                    appData.enrollments = appData.enrollments.filter(
-                        (e) =>
-                            !(
-                                e.studentId === studentId &&
-                                e.courseCode === courseCode
-                            )
-                    );
-
-                    saveEnrollments();
-                    updateStats();
-                    renderCourses();
-                    renderEnrolledStudents(courseCode);
-                    populateAvailableStudents(courseCode);
-                    showAlert("✅ Đã xóa sinh viên khỏi lớp!", "success");
-                    console.log(
-                        "🗑️ Đã xóa sinh viên khỏi lớp:",
-                        studentId,
-                        "->",
-                        courseCode
-                    );
-                }
-            }
-
-            // ============================================
-            // UTILITY FUNCTIONS
-            // ============================================
-            function showAlert(message, type = "success") {
-                const alert = document.createElement("div");
-                alert.className = `alert alert--${type}`;
-                alert.textContent = message;
-
-                const container = document.querySelector(".container");
-                container.insertBefore(alert, container.firstChild);
-
-                setTimeout(() => {
-                    alert.style.animation = "slideIn 0.3s reverse";
-                    setTimeout(() => alert.remove(), 300);
-                }, 3000);
-            }
-        </script>
+        <script src="./admin/admin.js"></script>
     </body>
 </html>
