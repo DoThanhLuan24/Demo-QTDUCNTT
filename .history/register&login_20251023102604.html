@@ -471,8 +471,11 @@
                             >
                             <input
                                 class="form-input"
-                                type="text"
+                                type="number"
                                 id="highSchoolScore"
+                                min="0"
+                                max="10"
+                                step="0.05"
                                 required
                                 placeholder="Nhập điểm trung bình THPT"
                                 oninput="this.setCustomValidity('')"
@@ -844,34 +847,15 @@
             }
 
             function validateScore(score) {
-                // Bỏ khoảng trắng đầu cuối
-                const trimmedScore = score.toString().trim();
+                // Ép kiểu sang số (phòng khi nhập là chuỗi)
+                const numericScore = parseFloat(score);
 
-                // Kiểm tra rỗng
-                if (trimmedScore === "") {
-                    showAlert("Vui lòng nhập điểm THPT!");
-                    return false;
-                }
-
-                // ✅ Kiểm tra định dạng (cho phép số âm/dương, tối đa 2 chữ số sau dấu thập phân)
-                const scoreRegex = /^-?\d{1,2}(\.\d{1,2})?$/;
-                if (!scoreRegex.test(trimmedScore)) {
-                    showAlert(
-                        "Điểm không đúng định dạng! Ví dụ hợp lệ: 7, 9.5, 10 hoặc 8.25"
-                    );
-                    return false;
-                }
-
-                // Ép kiểu sang số
-                const numericScore = parseFloat(trimmedScore);
-
-                // Kiểm tra NaN (phòng trường hợp parse lỗi)
+                // Kiểm tra không nhập hoặc nhập ký tự không hợp lệ
                 if (isNaN(numericScore)) {
                     showAlert("Vui lòng nhập điểm hợp lệ (số từ 0 đến 10)!");
                     return false;
                 }
 
-                // Kiểm tra khoảng cho phép
                 if (numericScore < 0) {
                     showAlert("Điểm không được nhỏ hơn 0!");
                     return false;
@@ -882,7 +866,7 @@
                     return false;
                 }
 
-                return true; // ✅ Hợp lệ
+                return true;
             }
 
             // Thêm validation vào form đăng ký (chèn vào sự kiện submit)
@@ -901,9 +885,9 @@
                         .value.trim()
                         .toLowerCase();
                     const phone = document.getElementById("phone").value.trim();
-                    const highSchoolScore = document
-                        .getElementById("highSchoolScore")
-                        .value.trim();
+                    const highSchoolScore = parseFloat(
+                        document.getElementById("highSchoolScore").value
+                    );
                     const username = document
                         .getElementById("regUsername")
                         .value.trim();
@@ -923,14 +907,14 @@
                         !username ||
                         !password ||
                         !confirmPassword ||
-                        !highSchoolScore
+                        isNaN(highSchoolScore)
                     ) {
                         showAlert("Vui lòng điền đầy đủ thông tin!");
                         return;
                     }
 
                     // --- 2️⃣ Kiểm tra điểm ---
-                    if (!validateScore(highSchoolScore)) {
+                    if (!highSchoolScore) {
                         return;
                     }
 

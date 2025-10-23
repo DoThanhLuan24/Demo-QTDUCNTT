@@ -853,8 +853,8 @@
                     return false;
                 }
 
-                // ✅ Kiểm tra định dạng (cho phép số âm/dương, tối đa 2 chữ số sau dấu thập phân)
-                const scoreRegex = /^-?\d{1,2}(\.\d{1,2})?$/;
+                // ✅ Kiểm tra định dạng (chỉ cho phép số, dấu chấm, tối đa 2 chữ số sau dấu thập phân)
+                const scoreRegex = /^\d{1,2}(\.\d{1,2})?$/;
                 if (!scoreRegex.test(trimmedScore)) {
                     showAlert(
                         "Điểm không đúng định dạng! Ví dụ hợp lệ: 7, 9.5, 10 hoặc 8.25"
@@ -901,9 +901,9 @@
                         .value.trim()
                         .toLowerCase();
                     const phone = document.getElementById("phone").value.trim();
-                    const highSchoolScore = document
-                        .getElementById("highSchoolScore")
-                        .value.trim();
+                    const highSchoolScore = parseFloat(
+                        document.getElementById("highSchoolScore").value
+                    );
                     const username = document
                         .getElementById("regUsername")
                         .value.trim();
@@ -923,7 +923,7 @@
                         !username ||
                         !password ||
                         !confirmPassword ||
-                        !highSchoolScore
+                        isNaN(highSchoolScore)
                     ) {
                         showAlert("Vui lòng điền đầy đủ thông tin!");
                         return;

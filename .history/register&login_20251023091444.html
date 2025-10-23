@@ -381,8 +381,6 @@
                                 id="loginPassword"
                                 required
                                 placeholder="Nhập mật khẩu"
-                                oninvalid="this.setCustomValidity('Vui lòng nhập mật khẩu!')"
-                                oninput="this.setCustomValidity('')"
                             />
                         </div>
                         <button class="btn btn-primary" type="submit">
@@ -447,7 +445,7 @@
                                     type="email"
                                     id="email"
                                     required
-                                    oninvalid="this.setCustomValidity('Vui lòng nhập email đúng định dạng template@gmail.com!')"
+                                    oninvalid="this.setCustomValidity('Vui lòng nhập email!')"
                                     oninput="this.setCustomValidity('')"
                                 />
                             </div>
@@ -471,10 +469,14 @@
                             >
                             <input
                                 class="form-input"
-                                type="text"
+                                type="number"
                                 id="highSchoolScore"
+                                min="0"
+                                max="10"
+                                step="0.1"
                                 required
                                 placeholder="Nhập điểm trung bình THPT"
+                                oninvalid="this.setCustomValidity('Vui lòng nhập điểm THPT!')"
                                 oninput="this.setCustomValidity('')"
                             />
                         </div>
@@ -765,127 +767,6 @@
                 }, 1500);
             }
 
-            function goToLogin() {
-                document
-                    .getElementById("successView")
-                    .classList.remove("active");
-                document.getElementById("loginView").classList.add("active");
-                document.querySelector(".mode-toggle").style.display = "flex";
-
-                document
-                    .querySelectorAll(".mode-btn")
-                    .forEach((btn) => btn.classList.remove("active"));
-                document
-                    .querySelectorAll(".mode-btn")[0]
-                    .classList.add("active");
-
-                document.getElementById("mainTitle").textContent = "Đăng nhập";
-                document.getElementById("mainSubtitle").textContent =
-                    "Sử dụng tài khoản vừa tạo";
-
-                document.getElementById("registerForm").reset();
-            }
-
-            // Hàm kiểm tra email có bị trùng lặp không
-            function isEmailDuplicate(email) {
-                // Lấy danh sách tất cả người dùng
-                const allUsers = getAllUsers();
-
-                // Kiểm tra xem email đã tồn tại chưa (không phân biệt hoa thường)
-                const emailLower = email.toLowerCase().trim();
-                const isDuplicate = allUsers.some(
-                    (user) =>
-                        user.email && user.email.toLowerCase() === emailLower
-                );
-
-                return isDuplicate;
-            }
-
-            function validateBirthDate(birthDateStr) {
-                // 1️⃣ Kiểm tra có nhập đầy đủ không
-                if (!birthDateStr || birthDateStr.length < 10) {
-                    showAlert("Vui lòng nhập đầy đủ ngày sinh (yyyy-mm-dd)!");
-                    return false;
-                }
-
-                // 2️⃣ Parse thành đối tượng Date
-                const birthDate = new Date(birthDateStr);
-                if (isNaN(birthDate.getTime())) {
-                    showAlert("Ngày sinh không hợp lệ!");
-                    return false;
-                }
-
-                // 3️⃣ Tính tuổi
-                const today = new Date();
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const m = today.getMonth() - birthDate.getMonth();
-                if (
-                    m < 0 ||
-                    (m === 0 && today.getDate() < birthDate.getDate())
-                ) {
-                    age--;
-                }
-
-                // 4️⃣ Kiểm tra giới hạn tuổi
-                if (age < 0) {
-                    showAlert("Ngày sinh không hợp lệ!");
-                    return false;
-                }
-                if (age < 18) {
-                    showAlert("Tuổi phải từ 18 trở lên!");
-                    return false;
-                }
-                if (age > 80) {
-                    showAlert("Tuổi không được quá 80!");
-                    return false;
-                }
-
-                return true; // ✅ Hợp lệ
-            }
-
-            function validateScore(score) {
-                // Bỏ khoảng trắng đầu cuối
-                const trimmedScore = score.toString().trim();
-
-                // Kiểm tra rỗng
-                if (trimmedScore === "") {
-                    showAlert("Vui lòng nhập điểm THPT!");
-                    return false;
-                }
-
-                // ✅ Kiểm tra định dạng (cho phép số âm/dương, tối đa 2 chữ số sau dấu thập phân)
-                const scoreRegex = /^-?\d{1,2}(\.\d{1,2})?$/;
-                if (!scoreRegex.test(trimmedScore)) {
-                    showAlert(
-                        "Điểm không đúng định dạng! Ví dụ hợp lệ: 7, 9.5, 10 hoặc 8.25"
-                    );
-                    return false;
-                }
-
-                // Ép kiểu sang số
-                const numericScore = parseFloat(trimmedScore);
-
-                // Kiểm tra NaN (phòng trường hợp parse lỗi)
-                if (isNaN(numericScore)) {
-                    showAlert("Vui lòng nhập điểm hợp lệ (số từ 0 đến 10)!");
-                    return false;
-                }
-
-                // Kiểm tra khoảng cho phép
-                if (numericScore < 0) {
-                    showAlert("Điểm không được nhỏ hơn 0!");
-                    return false;
-                }
-
-                if (numericScore > 10) {
-                    showAlert("Điểm không được lớn hơn 10!");
-                    return false;
-                }
-
-                return true; // ✅ Hợp lệ
-            }
-
-            // Thêm validation vào form đăng ký (chèn vào sự kiện submit)
             document
                 .getElementById("registerForm")
                 .addEventListener("submit", function (e) {
@@ -896,14 +777,11 @@
                         .value.trim();
                     const birthDate =
                         document.getElementById("birthDate").value;
-                    const email = document
-                        .getElementById("email")
-                        .value.trim()
-                        .toLowerCase();
+                    const email = document.getElementById("email").value.trim();
                     const phone = document.getElementById("phone").value.trim();
-                    const highSchoolScore = document
-                        .getElementById("highSchoolScore")
-                        .value.trim();
+                    const highSchoolScore = parseFloat(
+                        document.getElementById("highSchoolScore").value
+                    );
                     const username = document
                         .getElementById("regUsername")
                         .value.trim();
@@ -914,7 +792,6 @@
                         .getElementById("confirmPassword")
                         .value.trim();
 
-                    // --- 1️⃣ Kiểm tra rỗng ---
                     if (
                         !fullName ||
                         !birthDate ||
@@ -923,18 +800,17 @@
                         !username ||
                         !password ||
                         !confirmPassword ||
-                        !highSchoolScore
+                        isNaN(highSchoolScore)
                     ) {
                         showAlert("Vui lòng điền đầy đủ thông tin!");
                         return;
                     }
 
-                    // --- 2️⃣ Kiểm tra điểm ---
-                    if (!validateScore(highSchoolScore)) {
+                    if (highSchoolScore < 0 || highSchoolScore > 10) {
+                        showAlert("Điểm THPT phải từ 0 đến 10!");
                         return;
                     }
 
-                    // --- 3️⃣ Kiểm tra mật khẩu ---
                     if (password.length < 6) {
                         showAlert("Mật khẩu phải có ít nhất 6 ký tự!");
                         return;
@@ -945,54 +821,17 @@
                         return;
                     }
 
-                    // --- 4️⃣ Kiểm tra định dạng email (regex chuẩn) ---
-                    const emailRegex =
-                        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                    if (!emailRegex.test(email)) {
-                        showAlert(
-                            "Email không hợp lệ! Vui lòng nhập theo mẫu: ten@example.com"
-                        );
+                    if (!email.includes("@")) {
+                        showAlert("Email không hợp lệ!");
                         return;
                     }
 
-                    // --- 5️⃣ Kiểm tra email trùng lặp (THÊM MỚI) ---
-                    if (isEmailDuplicate(email)) {
-                        showAlert(
-                            "Email này đã được sử dụng! Vui lòng chọn email khác."
-                        );
-                        return;
-                    }
-
-                    // --- 6️⃣ Kiểm tra số điện thoại ---
-                    const phoneRegex = /^[0-9]{10,11}$/;
-                    if (
-                        !phoneRegex.test(phone) &&
-                        (phone.length < 10 || phone.length > 11)
-                    ) {
-                        showAlert("Số điện thoại phải có 10–11 chữ số!");
-                        return;
-                    }
-
-                    if (!/^[0-9]+$/.test(phone)) {
-                        showAlert(
-                            "Số điện thoại chỉ được chứa ký tự số (0–9)!"
-                        );
-                        return;
-                    }
-
-                    // --- 7️⃣ Kiểm tra ngày sinh ---
-                    if (!validateBirthDate(birthDate)) {
-                        return; // ❌ Dừng lại nếu ngày sinh không hợp lệ
-                    }
-
-                    // --- 8️⃣ Kiểm tra trùng tên đăng nhập ---
                     const existingUsers = getAllUsers();
                     if (existingUsers.find((u) => u.username === username)) {
                         showAlert("Tên đăng nhập đã tồn tại!");
                         return;
                     }
 
-                    // --- 9️⃣ Tạo ID sinh viên và lưu vào localStorage ---
                     const studentId = "SV" + Date.now().toString().slice(-6);
                     const studentData = {
                         id: Date.now(),
@@ -1014,7 +853,6 @@
                     students.push(studentData);
                     localStorage.setItem("students", JSON.stringify(students));
 
-                    // --- 9️⃣ Hiển thị thông tin sau khi đăng ký ---
                     document.getElementById("displayStudentId").textContent =
                         studentId;
                     document.getElementById("displayUsername").textContent =
@@ -1032,6 +870,27 @@
 
                     showAlert("Đăng ký thành công!", "success");
                 });
+
+            function goToLogin() {
+                document
+                    .getElementById("successView")
+                    .classList.remove("active");
+                document.getElementById("loginView").classList.add("active");
+                document.querySelector(".mode-toggle").style.display = "flex";
+
+                document
+                    .querySelectorAll(".mode-btn")
+                    .forEach((btn) => btn.classList.remove("active"));
+                document
+                    .querySelectorAll(".mode-btn")[0]
+                    .classList.add("active");
+
+                document.getElementById("mainTitle").textContent = "Đăng nhập";
+                document.getElementById("mainSubtitle").textContent =
+                    "Sử dụng tài khoản vừa tạo";
+
+                document.getElementById("registerForm").reset();
+            }
         </script>
     </body>
 </html>

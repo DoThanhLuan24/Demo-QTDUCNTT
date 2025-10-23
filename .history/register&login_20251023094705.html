@@ -471,10 +471,14 @@
                             >
                             <input
                                 class="form-input"
-                                type="text"
+                                type="number"
                                 id="highSchoolScore"
+                                min="0"
+                                max="10"
+                                step="0.1"
                                 required
                                 placeholder="Nhập điểm trung bình THPT"
+                                oninvalid="this.setCustomValidity('Vui lòng nhập điểm THPT!')"
                                 oninput="this.setCustomValidity('')"
                             />
                         </div>
@@ -801,90 +805,6 @@
                 return isDuplicate;
             }
 
-            function validateBirthDate(birthDateStr) {
-                // 1️⃣ Kiểm tra có nhập đầy đủ không
-                if (!birthDateStr || birthDateStr.length < 10) {
-                    showAlert("Vui lòng nhập đầy đủ ngày sinh (yyyy-mm-dd)!");
-                    return false;
-                }
-
-                // 2️⃣ Parse thành đối tượng Date
-                const birthDate = new Date(birthDateStr);
-                if (isNaN(birthDate.getTime())) {
-                    showAlert("Ngày sinh không hợp lệ!");
-                    return false;
-                }
-
-                // 3️⃣ Tính tuổi
-                const today = new Date();
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const m = today.getMonth() - birthDate.getMonth();
-                if (
-                    m < 0 ||
-                    (m === 0 && today.getDate() < birthDate.getDate())
-                ) {
-                    age--;
-                }
-
-                // 4️⃣ Kiểm tra giới hạn tuổi
-                if (age < 0) {
-                    showAlert("Ngày sinh không hợp lệ!");
-                    return false;
-                }
-                if (age < 18) {
-                    showAlert("Tuổi phải từ 18 trở lên!");
-                    return false;
-                }
-                if (age > 80) {
-                    showAlert("Tuổi không được quá 80!");
-                    return false;
-                }
-
-                return true; // ✅ Hợp lệ
-            }
-
-            function validateScore(score) {
-                // Bỏ khoảng trắng đầu cuối
-                const trimmedScore = score.toString().trim();
-
-                // Kiểm tra rỗng
-                if (trimmedScore === "") {
-                    showAlert("Vui lòng nhập điểm THPT!");
-                    return false;
-                }
-
-                // ✅ Kiểm tra định dạng (cho phép số âm/dương, tối đa 2 chữ số sau dấu thập phân)
-                const scoreRegex = /^-?\d{1,2}(\.\d{1,2})?$/;
-                if (!scoreRegex.test(trimmedScore)) {
-                    showAlert(
-                        "Điểm không đúng định dạng! Ví dụ hợp lệ: 7, 9.5, 10 hoặc 8.25"
-                    );
-                    return false;
-                }
-
-                // Ép kiểu sang số
-                const numericScore = parseFloat(trimmedScore);
-
-                // Kiểm tra NaN (phòng trường hợp parse lỗi)
-                if (isNaN(numericScore)) {
-                    showAlert("Vui lòng nhập điểm hợp lệ (số từ 0 đến 10)!");
-                    return false;
-                }
-
-                // Kiểm tra khoảng cho phép
-                if (numericScore < 0) {
-                    showAlert("Điểm không được nhỏ hơn 0!");
-                    return false;
-                }
-
-                if (numericScore > 10) {
-                    showAlert("Điểm không được lớn hơn 10!");
-                    return false;
-                }
-
-                return true; // ✅ Hợp lệ
-            }
-
             // Thêm validation vào form đăng ký (chèn vào sự kiện submit)
             document
                 .getElementById("registerForm")
@@ -901,9 +821,9 @@
                         .value.trim()
                         .toLowerCase();
                     const phone = document.getElementById("phone").value.trim();
-                    const highSchoolScore = document
-                        .getElementById("highSchoolScore")
-                        .value.trim();
+                    const highSchoolScore = parseFloat(
+                        document.getElementById("highSchoolScore").value
+                    );
                     const username = document
                         .getElementById("regUsername")
                         .value.trim();
@@ -923,14 +843,15 @@
                         !username ||
                         !password ||
                         !confirmPassword ||
-                        !highSchoolScore
+                        isNaN(highSchoolScore)
                     ) {
                         showAlert("Vui lòng điền đầy đủ thông tin!");
                         return;
                     }
 
                     // --- 2️⃣ Kiểm tra điểm ---
-                    if (!validateScore(highSchoolScore)) {
+                    if (highSchoolScore < 0 || highSchoolScore > 10) {
+                        showAlert("Điểm THPT phải từ 0 đến 10!");
                         return;
                     }
 
@@ -965,14 +886,10 @@
 
                     // --- 6️⃣ Kiểm tra số điện thoại ---
                     const phoneRegex = /^[0-9]{10,11}$/;
-                    if (
-                        !phoneRegex.test(phone) &&
-                        (phone.length < 10 || phone.length > 11)
-                    ) {
+                    if (!phoneRegex.test(phone)) {
                         showAlert("Số điện thoại phải có 10–11 chữ số!");
                         return;
                     }
-
                     if (!/^[0-9]+$/.test(phone)) {
                         showAlert(
                             "Số điện thoại chỉ được chứa ký tự số (0–9)!"
@@ -980,19 +897,21 @@
                         return;
                     }
 
-                    // --- 7️⃣ Kiểm tra ngày sinh ---
-                    if (!validateBirthDate(birthDate)) {
-                        return; // ❌ Dừng lại nếu ngày sinh không hợp lệ
+                    if (!phoneRegex.test(phone)) {
+                        showAlert(
+                            "Số điện thoại không đúng định dạng! Ví dụ hợp lệ: 0912345678 hoặc 0376543210"
+                        );
+                        return;
                     }
 
-                    // --- 8️⃣ Kiểm tra trùng tên đăng nhập ---
+                    // --- 7️⃣ Kiểm tra trùng tên đăng nhập ---
                     const existingUsers = getAllUsers();
                     if (existingUsers.find((u) => u.username === username)) {
                         showAlert("Tên đăng nhập đã tồn tại!");
                         return;
                     }
 
-                    // --- 9️⃣ Tạo ID sinh viên và lưu vào localStorage ---
+                    // --- 8️⃣ Tạo ID sinh viên và lưu vào localStorage ---
                     const studentId = "SV" + Date.now().toString().slice(-6);
                     const studentData = {
                         id: Date.now(),
