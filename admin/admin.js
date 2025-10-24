@@ -1015,6 +1015,1119 @@ function removeStudentFromCourse(enrollmentId) {
 }
 
 // ============================================
+// UTILITY: Escape HTML to prevent XSS
+// ============================================
+function escapeHtml(text) {
+    if (text == null) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================
+// ENHANCED COURSE RENDERING (Cải tiến version hiện tại)
+// ============================================
+function renderCourses() {
+    const tbody = document.getElementById("coursesTableBody");
+    tbody.innerHTML = "";
+
+    if (appData.courses.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; color: #999; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📚</div>
+                    <div>Chưa có lớp học nào</div>
+                    <div style="margin-top: 8px; font-size: 14px;">Nhấn "Thêm lớp học" để bắt đầu</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    appData.courses.forEach((course) => {
+        const enrolledCount = appData.enrollments.filter(
+            (e) => e.courseCode === course.code
+        ).length;
+        const isFull = enrolledCount >= course.maxStudents;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td style="font-weight: 600; color: #667eea;">${escapeHtml(
+                course.code
+            )}</td>
+            <td>${escapeHtml(course.name)}</td>
+            <td><span class="badge badge--${course.type}">${
+            course.type === "remedial" ? "Tăng Cường" : "Chính Thức"
+        }</span></td>
+            <td>${escapeHtml(course.instructor)}</td>
+            <td style="text-align: center;">
+                <span class="badge ${isFull ? "badge--danger" : "badge--info"}">
+                    ${enrolledCount}/${course.maxStudents}
+                </span>
+            </td>
+            <td>
+                <span class="badge badge--${isFull ? "full" : "active"}">
+                    ${isFull ? "Đầy" : "Còn chỗ"}
+                </span>
+            </td>
+            <td>
+                <div class="actions" style="display: flex; gap: 8px; justify-content: center;">
+                    <button class="btn btn--primary btn--small" data-action="manage" data-course-id="${
+                        course.id
+                    }" title="Quản lý sinh viên">
+                        👥 Quản lý SV
+                    </button>
+                    <button class="btn btn--info btn--small" data-action="edit" data-course-id="${
+                        course.id
+                    }" title="Chỉnh sửa">
+                        ✏️ Sửa
+                    </button>
+                    <button class="btn btn--danger btn--small" data-action="delete" data-course-id="${
+                        course.id
+                    }" title="Xóa">
+                        🗑️ Xóa
+                    </button>
+                </div>
+            </td>
+        `;
+
+        // Event listeners (thay vì onclick inline)
+        const manageBtn = row.querySelector('[data-action="manage"]');
+        const editBtn = row.querySelector('[data-action="edit"]');
+        const deleteBtn = row.querySelector('[data-action="delete"]');
+
+        if (manageBtn)
+            manageBtn.addEventListener("click", () =>
+                openManageStudents(course.id)
+            );
+        if (editBtn)
+            editBtn.addEventListener("click", () => openEditCourse(course.id));
+        if (deleteBtn)
+            deleteBtn.addEventListener("click", () => deleteCourse(course.id));
+
+        tbody.appendChild(row);
+    });
+}
+
+// ============================================
+// ENHANCED MANAGE STUDENTS LIST
+// ============================================
+function renderManageStudentsList(course) {
+    const tbody = document.getElementById("manageStudentsBody");
+
+    if (!tbody) {
+        console.error("Element manageStudentsBody not found");
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    const enrolledStudents = appData.enrollments.filter(
+        (e) => e.courseCode === course.code
+    );
+
+    if (enrolledStudents.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; color: #999; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">👥</div>
+                    <div>Chưa có sinh viên nào trong lớp</div>
+                    <div style="margin-top: 8px; font-size: 14px;">
+                        Sinh viên sẽ xuất hiện ở đây sau khi bạn duyệt yêu cầu đăng ký
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    enrolledStudents.forEach((enrollment, index) => {
+        const student = appData.students.find(
+            (s) => s.studentId === enrollment.studentId
+        );
+
+        if (!student) {
+            console.warn(`Student with ID ${enrollment.studentId} not found`);
+            return;
+        }
+
+        const enrollDate = new Date(enrollment.enrollDate).toLocaleDateString(
+            "vi-VN"
+        );
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td style="font-weight: 600; text-align: center;">${index + 1}</td>
+            <td style="color: #667eea; font-weight: 600;">${escapeHtml(
+                student.studentId
+            )}</td>
+            <td>${escapeHtml(student.fullName)}</td>
+            <td>${escapeHtml(student.email)}</td>
+            <td style="text-align: center;">${enrollDate}</td>
+            <td style="text-align: center;">
+                <button class="btn btn--danger btn--small" data-enrollment-id="${
+                    enrollment.id
+                }" title="Xóa sinh viên khỏi lớp">
+                    🗑️ Xóa
+                </button>
+            </td>
+        `;
+
+        // Event listener cho nút xóa
+        const deleteBtn = row.querySelector("[data-enrollment-id]");
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+                removeStudentFromCourse(enrollment.id);
+            });
+        }
+
+        tbody.appendChild(row);
+    });
+
+    // Cập nhật số lượng sinh viên trong tiêu đề modal
+    const modalTitle = document.getElementById("manageCourseTitle");
+    if (modalTitle) {
+        modalTitle.textContent = `Quản lý sinh viên: ${course.name} (${enrolledStudents.length}/${course.maxStudents})`;
+    }
+}
+
+// ============================================
+// ENHANCED REMOVE STUDENT FROM COURSE
+// ============================================
+function removeStudentFromCourse(enrollmentId) {
+    const enrollment = appData.enrollments.find((e) => e.id === enrollmentId);
+
+    if (!enrollment) {
+        showAlert("❌ Không tìm thấy thông tin đăng ký!", "error");
+        return;
+    }
+
+    const student = appData.students.find(
+        (s) => s.studentId === enrollment.studentId
+    );
+
+    const course = appData.courses.find(
+        (c) => c.id === appData.managingCourseId
+    );
+
+    const studentName = student?.fullName || "sinh viên";
+    const courseName = course?.name || "lớp học";
+
+    if (
+        !confirm(
+            `Bạn có chắc chắn muốn xóa "${studentName}" khỏi lớp "${courseName}"?\n\n` +
+                `⚠️ Hành động này không thể hoàn tác.`
+        )
+    ) {
+        return;
+    }
+
+    // Xóa enrollment
+    appData.enrollments = appData.enrollments.filter(
+        (e) => e.id !== enrollmentId
+    );
+
+    saveEnrollments();
+
+    // Cập nhật lại danh sách
+    if (course) {
+        renderManageStudentsList(course);
+    }
+
+    // Cập nhật stats và các bảng khác
+    updateStats();
+    renderCourses();
+    renderEnrollments();
+
+    showAlert("✅ Đã xóa sinh viên khỏi lớp thành công!", "success");
+    console.log(`🗑️ Đã xóa ${studentName} khỏi ${courseName}`);
+}
+
+// ============================================
+// SEARCH & FILTER FUNCTIONS
+// ============================================
+function filterEnrollments() {
+    renderEnrollments();
+}
+
+function clearFilters() {
+    document.getElementById("filterCourse").value = "";
+    document.getElementById("filterStudent").value = "";
+    renderEnrollments();
+}
+
+// ============================================
+// EXPORT DATA (Bonus feature)
+// ============================================
+function exportToCSV(type) {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    let headers = [];
+    let data = [];
+
+    switch (type) {
+        case "courses":
+            headers = [
+                "Mã lớp",
+                "Tên lớp",
+                "Loại",
+                "Giảng viên",
+                "Sĩ số tối đa",
+                "Đã đăng ký",
+            ];
+            data = appData.courses.map((course) => {
+                const enrolled = appData.enrollments.filter(
+                    (e) => e.courseCode === course.code
+                ).length;
+                return [
+                    course.code,
+                    course.name,
+                    course.type === "remedial" ? "Tăng Cường" : "Chính Thức",
+                    course.instructor,
+                    course.maxStudents,
+                    enrolled,
+                ];
+            });
+            break;
+
+        case "students":
+            headers = [
+                "Mã SV",
+                "Họ tên",
+                "Email",
+                "Điểm THPT",
+                "Số lớp đã đăng ký",
+            ];
+            data = appData.students.map((student) => {
+                const enrolledCount = appData.enrollments.filter(
+                    (e) => e.studentId === student.studentId
+                ).length;
+                return [
+                    student.studentId,
+                    student.fullName,
+                    student.email,
+                    student.highSchoolScore || "N/A",
+                    enrolledCount,
+                ];
+            });
+            break;
+
+        case "enrollments":
+            headers = ["Mã SV", "Họ tên", "Mã lớp", "Tên lớp", "Ngày đăng ký"];
+            data = appData.enrollments.map((enrollment) => {
+                const student = appData.students.find(
+                    (s) => s.studentId === enrollment.studentId
+                );
+                const course = appData.courses.find(
+                    (c) => c.code === enrollment.courseCode
+                );
+                return [
+                    student?.studentId || "N/A",
+                    student?.fullName || "N/A",
+                    course?.code || "N/A",
+                    course?.name || "N/A",
+                    new Date(enrollment.enrollDate).toLocaleDateString("vi-VN"),
+                ];
+            });
+            break;
+    }
+
+    csvContent += headers.join(",") + "\n";
+    data.forEach((row) => {
+        csvContent += row.map((cell) => `"${cell}"`).join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+        "download",
+        `${type}_${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showAlert(`✅ Đã xuất ${type} thành công!`, "success");
+}
+
+// ============================================
+// STATISTICS DETAILS (Bonus)
+// ============================================
+function showDetailedStats() {
+    const totalSeats = appData.courses.reduce(
+        (sum, course) => sum + course.maxStudents,
+        0
+    );
+    const occupiedSeats = appData.enrollments.length;
+    const occupancyRate =
+        totalSeats > 0 ? ((occupiedSeats / totalSeats) * 100).toFixed(1) : 0;
+
+    const remedialCourses = appData.courses.filter(
+        (c) => c.type === "remedial"
+    ).length;
+    const officialCourses = appData.courses.filter(
+        (c) => c.type === "official"
+    ).length;
+
+    const qualifiedStudents = appData.students.filter(
+        (s) => s.highSchoolScore >= 5.0
+    ).length;
+    const unqualifiedStudents = appData.students.length - qualifiedStudents;
+
+    const statsHTML = `
+        <div class="stats-details">
+            <h3>📊 Thống kê chi tiết</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <strong>Tổng số chỗ:</strong> ${totalSeats}
+                </div>
+                <div class="stat-item">
+                    <strong>Đã sử dụng:</strong> ${occupiedSeats}
+                </div>
+                <div class="stat-item">
+                    <strong>Tỷ lệ lấp đầy:</strong> ${occupancyRate}%
+                </div>
+                <div class="stat-item">
+                    <strong>Lớp Tăng Cường:</strong> ${remedialCourses}
+                </div>
+                <div class="stat-item">
+                    <strong>Lớp Chính Thức:</strong> ${officialCourses}
+                </div>
+                <div class="stat-item">
+                    <strong>SV đủ điều kiện:</strong> ${qualifiedStudents}
+                </div>
+                <div class="stat-item">
+                    <strong>SV cần Tăng Cường:</strong> ${unqualifiedStudents}
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Có thể hiển thị trong một modal hoặc alert
+    alert(statsHTML.replace(/<[^>]*>/g, "\n"));
+}
+
+// ============================================
+// VALIDATION HELPERS
+// ============================================
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function validateStudentId(studentId) {
+    const re = /^SV\d{5}$/;
+    return re.test(studentId);
+}
+
+function validateCourseCode(code) {
+    const re = /^[A-Z_]+\d+$/;
+    return re.test(code);
+}
+
+// ============================================
+// BACKUP & RESTORE DATA
+// ============================================
+function backupData() {
+    const backup = {
+        courses: appData.courses,
+        students: appData.students,
+        enrollments: appData.enrollments,
+        pendingRequests: appData.pendingRequests,
+        timestamp: new Date().toISOString(),
+    };
+
+    const dataStr = JSON.stringify(backup, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `backup_${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showAlert("✅ Đã sao lưu dữ liệu thành công!", "success");
+}
+
+function restoreData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+
+            if (
+                confirm(
+                    "Khôi phục dữ liệu sẽ ghi đè toàn bộ dữ liệu hiện tại. Tiếp tục?"
+                )
+            ) {
+                appData.courses = backup.courses || [];
+                appData.students = backup.students || [];
+                appData.enrollments = backup.enrollments || [];
+                appData.pendingRequests = backup.pendingRequests || [];
+
+                saveCourses();
+                saveStudents();
+                saveEnrollments();
+                savePendingRequests();
+
+                updateStats();
+                renderCourses();
+                renderStudents();
+                renderEnrollments();
+                renderPendingRequests();
+                populateFilterOptions();
+
+                showAlert("✅ Khôi phục dữ liệu thành công!", "success");
+            }
+        } catch (error) {
+            showAlert("❌ File không hợp lệ!", "error");
+            console.error("Restore error:", error);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ============================================
+// ANIMATIONS FOR ALERTS
+// ============================================
+const style = document.createElement("style");
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+
+    .btn--small {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .badge--info {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge--danger {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+`;
+document.head.appendChild(style);
+
+console.log("✅ Tất cả chức năng đã được tải!");
+
+// Đảm bảo các hàm này có trong file JS của bạn
+
+function openManageStudents(courseId) {
+    console.log("Opening manage students for course:", courseId);
+
+    const course = appData.courses.find((c) => c.id === courseId);
+    if (!course) {
+        console.error("Course not found:", courseId);
+        showAlert("❌ Không tìm thấy lớp học!", "error");
+        return;
+    }
+
+    appData.managingCourseId = courseId;
+
+    const modalTitle = document.getElementById("manageCourseTitle");
+    if (modalTitle) {
+        modalTitle.textContent = `Quản lý sinh viên: ${course.name} (${course.code})`;
+    }
+
+    renderManageStudentsList(course);
+
+    const modal = document.getElementById("manageStudentsModal");
+    if (modal) {
+        modal.classList.add("active");
+        console.log("Modal opened successfully");
+    } else {
+        console.error("Modal element not found!");
+    }
+}
+
+function closeManageStudentsModal() {
+    const modal = document.getElementById("manageStudentsModal");
+    if (modal) {
+        modal.classList.remove("active");
+    }
+    appData.managingCourseId = null;
+}
+
+function renderManageStudentsList(course) {
+    const tbody = document.getElementById("manageStudentsBody");
+
+    if (!tbody) {
+        console.error("Element manageStudentsBody not found");
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    const enrolledStudents = appData.enrollments.filter(
+        (e) => e.courseCode === course.code
+    );
+
+    console.log("Enrolled students:", enrolledStudents.length);
+
+    if (enrolledStudents.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; color: #999; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">👥</div>
+                    <div>Chưa có sinh viên nào trong lớp</div>
+                    <div style="margin-top: 8px; font-size: 14px;">
+                        Sinh viên sẽ xuất hiện ở đây sau khi bạn duyệt yêu cầu đăng ký
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    enrolledStudents.forEach((enrollment, index) => {
+        const student = appData.students.find(
+            (s) => s.studentId === enrollment.studentId
+        );
+
+        if (!student) {
+            console.warn(`Student with ID ${enrollment.studentId} not found`);
+            return;
+        }
+
+        const enrollDate = new Date(enrollment.enrollDate).toLocaleDateString(
+            "vi-VN"
+        );
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td style="font-weight: 600; text-align: center;">${index + 1}</td>
+            <td style="color: #667eea; font-weight: 600;">${escapeHtml(
+                student.studentId
+            )}</td>
+            <td>${escapeHtml(student.fullName)}</td>
+            <td>${escapeHtml(student.email)}</td>
+            <td style="text-align: center;">${enrollDate}</td>
+            <td style="text-align: center;">
+                <button class="btn btn--danger btn--small" data-enrollment-id="${
+                    enrollment.id
+                }" title="Xóa sinh viên khỏi lớp">
+                    🗑️ Xóa
+                </button>
+            </td>
+        `;
+
+        const deleteBtn = row.querySelector("[data-enrollment-id]");
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+                removeStudentFromCourse(enrollment.id);
+            });
+        }
+
+        tbody.appendChild(row);
+    });
+}
+
+function removeStudentFromCourse(enrollmentId) {
+    const enrollment = appData.enrollments.find((e) => e.id === enrollmentId);
+
+    if (!enrollment) {
+        showAlert("❌ Không tìm thấy thông tin đăng ký!", "error");
+        return;
+    }
+
+    const student = appData.students.find(
+        (s) => s.studentId === enrollment.studentId
+    );
+
+    const studentName = student?.fullName || "sinh viên";
+
+    if (
+        !confirm(
+            `Bạn có chắc chắn muốn xóa "${studentName}" khỏi lớp này?\n\n⚠️ Hành động này không thể hoàn tác.`
+        )
+    ) {
+        return;
+    }
+
+    appData.enrollments = appData.enrollments.filter(
+        (e) => e.id !== enrollmentId
+    );
+
+    saveEnrollments();
+
+    const course = appData.courses.find(
+        (c) => c.id === appData.managingCourseId
+    );
+
+    if (course) {
+        renderManageStudentsList(course);
+    }
+
+    updateStats();
+    renderCourses();
+    renderEnrollments();
+
+    showAlert("✅ Đã xóa sinh viên khỏi lớp thành công!", "success");
+}
+
+function escapeHtml(text) {
+    if (text == null) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Đóng modal khi click bên ngoài
+document.addEventListener("click", function (e) {
+    const modal = document.getElementById("manageStudentsModal");
+    if (e.target === modal) {
+        closeManageStudentsModal();
+    }
+});
+
+// Đóng modal khi nhấn ESC
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+        closeManageStudentsModal();
+    }
+});
+
+// ============================================
+// THÊM SINH VIÊN VÀO LỚP HỌC
+// ============================================
+
+function openAddStudentToCourse() {
+    const course = appData.courses.find(
+        (c) => c.id === appData.managingCourseId
+    );
+    if (!course) {
+        showAlert("❌ Không tìm thấy thông tin lớp học!", "error");
+        return;
+    }
+
+    // Kiểm tra lớp đã đầy chưa
+    const currentEnrollments = appData.enrollments.filter(
+        (e) => e.courseCode === course.code
+    ).length;
+
+    if (currentEnrollments >= course.maxStudents) {
+        showAlert("❌ Lớp học đã đầy! Không thể thêm sinh viên.", "error");
+        return;
+    }
+
+    const modalTitle = document.getElementById("addStudentModalTitle");
+    if (modalTitle) {
+        modalTitle.textContent = `Thêm sinh viên vào: ${course.name} (${currentEnrollments}/${course.maxStudents})`;
+    }
+
+    renderAvailableStudents(course);
+
+    const modal = document.getElementById("addStudentToCourseModal");
+    if (modal) {
+        modal.classList.add("active");
+    }
+}
+
+function closeAddStudentToCourseModal() {
+    const modal = document.getElementById("addStudentToCourseModal");
+    if (modal) {
+        modal.classList.remove("active");
+    }
+
+    // Reset search
+    const searchInput = document.getElementById("searchStudentInput");
+    if (searchInput) {
+        searchInput.value = "";
+    }
+}
+
+function renderAvailableStudents(course) {
+    const container = document.getElementById("availableStudentsList");
+
+    if (!container) {
+        console.error("availableStudentsList not found");
+        return;
+    }
+
+    // Lấy danh sách sinh viên đã đăng ký lớp này
+    const enrolledStudentIds = appData.enrollments
+        .filter((e) => e.courseCode === course.code)
+        .map((e) => e.studentId);
+
+    // Lấy danh sách sinh viên chưa đăng ký
+    const availableStudents = appData.students.filter(
+        (student) => !enrolledStudentIds.includes(student.studentId)
+    );
+
+    container.innerHTML = "";
+
+    if (availableStudents.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🎓</div>
+                <div class="empty-state-text">Không có sinh viên nào có thể thêm</div>
+                <div class="empty-state-subtext">Tất cả sinh viên đã được đăng ký vào lớp này</div>
+            </div>
+        `;
+        return;
+    }
+
+    availableStudents.forEach((student) => {
+        const isQualified = student.highSchoolScore >= 5.0;
+        const canEnroll = course.type === "remedial" || isQualified;
+
+        const studentItem = document.createElement("div");
+        studentItem.className = "available-student-item";
+
+        studentItem.innerHTML = `
+            <div class="student-info">
+                <div class="student-info-main">
+                    <span class="student-id">${escapeHtml(
+                        student.studentId
+                    )}</span>
+                    <span class="student-name">${escapeHtml(
+                        student.fullName
+                    )}</span>
+                </div>
+                <div class="student-info-secondary">
+                    <span>📧 ${escapeHtml(student.email)}</span>
+                    <span class="student-score">
+                        📊 Điểm THPT: 
+                        <span class="score-badge ${
+                            isQualified ? "qualified" : "unqualified"
+                        }">
+                            ${student.highSchoolScore || "N/A"}
+                        </span>
+                    </span>
+                    ${
+                        !canEnroll
+                            ? '<span style="color: #dc2626;">⚠️ Không đủ điều kiện cho lớp Chính Thức</span>'
+                            : ""
+                    }
+                </div>
+            </div>
+            <button 
+                class="btn ${
+                    canEnroll ? "btn--success" : "btn--warning"
+                } btn--small" 
+                onclick="addStudentToCourse('${student.studentId}')"
+                ${
+                    !canEnroll
+                        ? 'title="Sinh viên chưa đủ điều kiện nhưng vẫn có thể thêm"'
+                        : ""
+                }
+            >
+                ${canEnroll ? "✓ Thêm" : "⚠️ Thêm (cảnh báo)"}
+            </button>
+        `;
+
+        container.appendChild(studentItem);
+    });
+}
+
+function searchAvailableStudents() {
+    const searchInput = document.getElementById("searchStudentInput");
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+
+    const course = appData.courses.find(
+        (c) => c.id === appData.managingCourseId
+    );
+    if (!course) return;
+
+    const enrolledStudentIds = appData.enrollments
+        .filter((e) => e.courseCode === course.code)
+        .map((e) => e.studentId);
+
+    let availableStudents = appData.students.filter(
+        (student) => !enrolledStudentIds.includes(student.studentId)
+    );
+
+    // Lọc theo từ khóa tìm kiếm
+    if (searchTerm) {
+        availableStudents = availableStudents.filter(
+            (student) =>
+                student.studentId.toLowerCase().includes(searchTerm) ||
+                student.fullName.toLowerCase().includes(searchTerm) ||
+                student.email.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    const container = document.getElementById("availableStudentsList");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (availableStudents.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-text">Không tìm thấy sinh viên nào</div>
+                <div class="empty-state-subtext">Thử tìm kiếm với từ khóa khác</div>
+            </div>
+        `;
+        return;
+    }
+
+    availableStudents.forEach((student) => {
+        const isQualified = student.highSchoolScore >= 5.0;
+        const canEnroll = course.type === "remedial" || isQualified;
+
+        const studentItem = document.createElement("div");
+        studentItem.className = "available-student-item";
+
+        studentItem.innerHTML = `
+            <div class="student-info">
+                <div class="student-info-main">
+                    <span class="student-id">${escapeHtml(
+                        student.studentId
+                    )}</span>
+                    <span class="student-name">${escapeHtml(
+                        student.fullName
+                    )}</span>
+                </div>
+                <div class="student-info-secondary">
+                    <span>📧 ${escapeHtml(student.email)}</span>
+                    <span class="student-score">
+                        📊 Điểm THPT: 
+                        <span class="score-badge ${
+                            isQualified ? "qualified" : "unqualified"
+                        }">
+                            ${student.highSchoolScore || "N/A"}
+                        </span>
+                    </span>
+                    ${
+                        !canEnroll
+                            ? '<span style="color: #dc2626;">⚠️ Không đủ điều kiện</span>'
+                            : ""
+                    }
+                </div>
+            </div>
+            <button 
+                class="btn ${
+                    canEnroll ? "btn--success" : "btn--warning"
+                } btn--small" 
+                onclick="addStudentToCourse('${student.studentId}')"
+            >
+                ${canEnroll ? "✓ Thêm" : "⚠️ Thêm"}
+            </button>
+        `;
+
+        container.appendChild(studentItem);
+    });
+}
+
+function addStudentToCourse(studentId) {
+    const course = appData.courses.find(
+        (c) => c.id === appData.managingCourseId
+    );
+    const student = appData.students.find((s) => s.studentId === studentId);
+
+    if (!course || !student) {
+        showAlert("❌ Không tìm thấy thông tin!", "error");
+        return;
+    }
+
+    // Kiểm tra lớp đã đầy chưa
+    const currentEnrollments = appData.enrollments.filter(
+        (e) => e.courseCode === course.code
+    ).length;
+
+    if (currentEnrollments >= course.maxStudents) {
+        showAlert("❌ Lớp học đã đầy!", "error");
+        return;
+    }
+
+    // Kiểm tra sinh viên đã đăng ký chưa
+    const alreadyEnrolled = appData.enrollments.some(
+        (e) => e.courseCode === course.code && e.studentId === studentId
+    );
+
+    if (alreadyEnrolled) {
+        showAlert("❌ Sinh viên đã có trong lớp này rồi!", "error");
+        return;
+    }
+
+    // Kiểm tra điều kiện đăng ký
+    if (course.type === "official" && student.highSchoolScore < 5.0) {
+        if (
+            !confirm(
+                `⚠️ Cảnh báo:\n\n` +
+                    `Sinh viên ${student.fullName} có điểm THPT ${student.highSchoolScore} (< 5.0).\n` +
+                    `Lớp ${course.name} là lớp Chính Thức, yêu cầu điểm THPT ≥ 5.0.\n\n` +
+                    `Bạn vẫn muốn thêm sinh viên này?`
+            )
+        ) {
+            return;
+        }
+    }
+
+    // Thêm enrollment mới
+    const newEnrollment = {
+        id: Date.now(),
+        studentId: studentId,
+        courseCode: course.code,
+        enrollDate: new Date().toISOString(),
+    };
+
+    appData.enrollments.push(newEnrollment);
+    saveEnrollments();
+
+    // Cập nhật UI
+    updateStats();
+    renderCourses();
+    renderEnrollments();
+    renderManageStudentsList(course);
+    renderAvailableStudents(course);
+
+    showAlert(
+        `✅ Đã thêm ${student.fullName} vào lớp ${course.name}!`,
+        "success"
+    );
+    console.log(`➕ Added ${studentId} to ${course.code}`);
+}
+
+// ============================================
+// CẬP NHẬT RENDER MANAGE STUDENTS LIST
+// ============================================
+function renderManageStudentsList(course) {
+    const tbody = document.getElementById("manageStudentsBody");
+
+    if (!tbody) {
+        console.error("Element manageStudentsBody not found");
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    const enrolledStudents = appData.enrollments.filter(
+        (e) => e.courseCode === course.code
+    );
+
+    // Cập nhật thông tin sức chứa
+    const capacityInfo = document.getElementById("courseCapacityInfo");
+    if (capacityInfo) {
+        const percentage = Math.round(
+            (enrolledStudents.length / course.maxStudents) * 100
+        );
+        const statusColor =
+            percentage >= 90
+                ? "#dc2626"
+                : percentage >= 70
+                ? "#f59e0b"
+                : "#10b981";
+        capacityInfo.innerHTML = `
+            <span style="color: ${statusColor}; font-weight: 600;">
+                ${enrolledStudents.length}/${course.maxStudents} sinh viên (${percentage}%)
+            </span>
+        `;
+    }
+
+    if (enrolledStudents.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; color: #999; padding: 40px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">👥</div>
+                    <div>Chưa có sinh viên nào trong lớp</div>
+                    <div style="margin-top: 8px; font-size: 14px;">
+                        Nhấn nút "Thêm sinh viên vào lớp" để bắt đầu
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    enrolledStudents.forEach((enrollment, index) => {
+        const student = appData.students.find(
+            (s) => s.studentId === enrollment.studentId
+        );
+
+        if (!student) {
+            console.warn(`Student with ID ${enrollment.studentId} not found`);
+            return;
+        }
+
+        const enrollDate = new Date(enrollment.enrollDate).toLocaleDateString(
+            "vi-VN"
+        );
+        const isQualified = student.highSchoolScore >= 5.0;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td style="font-weight: 600; text-align: center;">${index + 1}</td>
+            <td style="color: #667eea; font-weight: 600;">${escapeHtml(
+                student.studentId
+            )}</td>
+            <td>${escapeHtml(student.fullName)}</td>
+            <td>${escapeHtml(student.email)}</td>
+            <td style="text-align: center;">
+                <span class="score-badge ${
+                    isQualified ? "qualified" : "unqualified"
+                }">
+                    ${student.highSchoolScore || "N/A"}
+                </span>
+            </td>
+            <td style="text-align: center;">${enrollDate}</td>
+            <td style="text-align: center;">
+                <button class="btn btn--danger btn--small" data-enrollment-id="${
+                    enrollment.id
+                }" title="Xóa sinh viên khỏi lớp">
+                    🗑️ Xóa
+                </button>
+            </td>
+        `;
+
+        const deleteBtn = row.querySelector("[data-enrollment-id]");
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", () => {
+                removeStudentFromCourse(enrollment.id);
+            });
+        }
+
+        tbody.appendChild(row);
+    });
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 function showAlert(message, type) {

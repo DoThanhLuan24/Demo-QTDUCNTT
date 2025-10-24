@@ -129,6 +129,137 @@
                 </table>
             </div>
 
+            <!-- Modal Quản lý Sinh viên trong Lớp -->
+            <div id="manageStudentsModal" class="modal">
+                <div class="modal__content" style="max-width: 1000px">
+                    <div class="modal__header">
+                        <h2 id="manageCourseTitle">Quản lý sinh viên</h2>
+                        <button
+                            class="modal__close"
+                            onclick="closeManageStudentsModal()"
+                        >
+                            ×
+                        </button>
+                    </div>
+                    <div class="modal__body">
+                        <!-- Nút thêm sinh viên -->
+                        <div
+                            style="
+                                margin-bottom: 20px;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                            "
+                        >
+                            <button
+                                class="btn btn--success"
+                                onclick="openAddStudentToCourse()"
+                            >
+                                ➕ Thêm sinh viên vào lớp
+                            </button>
+                            <div
+                                id="courseCapacityInfo"
+                                style="color: #6b7280; font-size: 14px"
+                            >
+                                <!-- Sẽ hiển thị thông tin sức chứa -->
+                            </div>
+                        </div>
+
+                        <!-- Bảng danh sách sinh viên -->
+                        <table class="table">
+                            <thead class="table__head">
+                                <tr>
+                                    <th style="width: 50px">STT</th>
+                                    <th>Mã SV</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Điểm THPT</th>
+                                    <th>Ngày đăng ký</th>
+                                    <th style="width: 100px">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manageStudentsBody">
+                                <tr>
+                                    <td
+                                        colspan="7"
+                                        style="text-align: center; color: #999"
+                                    >
+                                        Đang tải...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal__footer">
+                        <button
+                            class="btn btn--secondary"
+                            onclick="closeManageStudentsModal()"
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Thêm Sinh viên vào Lớp -->
+            <div id="addStudentToCourseModal" class="modal">
+                <div class="modal__content" style="max-width: 700px">
+                    <div class="modal__header">
+                        <h2 id="addStudentModalTitle">
+                            Thêm sinh viên vào lớp
+                        </h2>
+                        <button
+                            class="modal__close"
+                            onclick="closeAddStudentToCourseModal()"
+                        >
+                            ×
+                        </button>
+                    </div>
+                    <div class="modal__body">
+                        <!-- Tìm kiếm sinh viên -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                🔍 Tìm kiếm sinh viên
+                            </label>
+                            <input
+                                type="text"
+                                id="searchStudentInput"
+                                class="form-input"
+                                placeholder="Nhập mã sinh viên hoặc tên..."
+                                oninput="searchAvailableStudents()"
+                            />
+                        </div>
+
+                        <!-- Danh sách sinh viên có thể thêm -->
+                        <div style="margin-top: 20px">
+                            <h3
+                                style="
+                                    font-size: 16px;
+                                    margin-bottom: 12px;
+                                    color: #374151;
+                                "
+                            >
+                                Danh sách sinh viên có thể thêm:
+                            </h3>
+                            <div
+                                id="availableStudentsList"
+                                style="max-height: 400px; overflow-y: auto"
+                            >
+                                <!-- Danh sách sinh viên sẽ được render ở đây -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal__footer">
+                        <button
+                            class="btn btn--secondary"
+                            onclick="closeAddStudentToCourseModal()"
+                        >
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Form Thêm Sinh viên -->
             <div class="section">
                 <h2 class="section__title">Thêm sinh viên</h2>
@@ -442,6 +573,7 @@
                             class="form__input"
                             type="text"
                             id="editStudentId"
+                            placeholder="Nhập mã sinh viên"
                             required
                         />
                     </div>
@@ -451,6 +583,7 @@
                             class="form__input"
                             type="text"
                             id="editStudentName"
+                            placeholder="Nhập họ và tên"
                             required
                         />
                     </div>
@@ -460,6 +593,7 @@
                             class="form__input"
                             type="email"
                             id="editStudentEmail"
+                            placeholder="Nhập email"
                             required
                         />
                     </div>
@@ -469,6 +603,7 @@
                             class="form__input"
                             type="number"
                             id="editStudentScore"
+                            placeholder="Nhập điểm THPT"
                             min="0"
                             max="10"
                             step="0.1"
