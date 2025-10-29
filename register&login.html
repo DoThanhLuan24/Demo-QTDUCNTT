@@ -659,15 +659,29 @@
                     );
                 }
 
-                const studentAccounts = registeredStudents.map((student) => ({
-                    id: student.id,
-                    name: student.fullName,
-                    email: student.email,
-                    role: "student",
-                    username: student.username,
-                    password: student.password,
-                    studentId: student.studentId,
-                }));
+                const studentAccounts = registeredStudents.map((student) => {
+                    const rawScore = student.highSchoolScore;
+                    const parsedScore = parseFloat(rawScore);
+
+                    const validScore =
+                        rawScore === null ||
+                        rawScore === undefined ||
+                        rawScore === "" ||
+                        isNaN(parsedScore)
+                            ? 7.5
+                            : parsedScore;
+
+                    return {
+                        id: student.id,
+                        name: student.fullName,
+                        email: student.email,
+                        role: "student",
+                        username: student.username,
+                        password: student.password,
+                        studentId: student.studentId,
+                        highSchoolScore: validScore,
+                    };
+                });
 
                 return [...systemAccounts, ...studentAccounts];
             }

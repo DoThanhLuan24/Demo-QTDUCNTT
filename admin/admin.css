@@ -486,7 +486,7 @@ body {
 }
 
 .modal__body .table th {
-    background-color: #f9fafb;
+    background-color: #68c5cc;
     position: sticky;
     top: 0;
     z-index: 10;
