@@ -1052,13 +1052,50 @@ function handleAddCourse(e) {
     const courseInstructor = document
         .getElementById("courseInstructor")
         .value.trim();
-    const courseMaxStudents = parseInt(
+    const courseMaxStudents = Number(
         document.getElementById("courseMaxStudents").value
     );
 
     // Validation
     if (appData.courses.find((c) => c.code === courseCode)) {
         showAlert("❌ Mã lớp đã tồn tại!", "error");
+        return;
+    }
+
+    if (courseName === "") {
+        showAlert("❌ Tên lớp không được để trống!", "error");
+        return;
+    }
+
+    if (courseCode === "") {
+        showAlert("❌ Mã lớp không được để trống!", "error");
+        return;
+    }
+
+    if (courseType !== "remedial" && courseType !== "official") {
+        showAlert("❌ Loại lớp không hợp lệ!", "error");
+        return;
+    }
+
+    if (courseInstructor === "") {
+        showAlert("❌ Tên giảng viên không được để trống!", "error");
+        return;
+    } else if (!/^[A-Za-zÀ-Ỵà-ỵ\s]+$/.test(courseInstructor)) {
+        showAlert("❌ Tên giảng viên không hợp lệ!", "error");
+        return;
+    }
+
+    if (isNaN(courseMaxStudents)) {
+        showAlert("❌ Sức chứa lớp phải là 1 số từ 10 -> 120!", "error");
+        return;
+    } else if (!Number.isInteger(courseMaxStudents)) {
+        showAlert("❌ Sức chứa lớp phải là số nguyên!", "error");
+        return;
+    } else if (courseMaxStudents <= 0) {
+        showAlert("❌ Sức chứa lớp không được là số âm!", "error");
+        return;
+    } else if (courseMaxStudents < 10 || courseMaxStudents > 120) {
+        showAlert("❌ Sức chứa lớp phải từ 10 đến 120 sinh viên!", "error");
         return;
     }
 
@@ -1112,6 +1149,13 @@ function handleEditCourse(e) {
 
     const oldCode = appData.courses[courseIndex].code;
     const newCode = document.getElementById("editCourseCode").value.trim();
+    const newName = document.getElementById("editCourseName").value.trim();
+    const newNameInstructor = document
+        .getElementById("editCourseInstructor")
+        .value.trim();
+    const newMaxStudents = Number(
+        document.getElementById("editCourseMaxStudents").value
+    );
 
     // Kiểm tra trùng mã (nếu thay đổi)
     if (
@@ -1122,17 +1166,50 @@ function handleEditCourse(e) {
         return;
     }
 
+    if (courseId === "") {
+        showAlert("❌ Tên lớp không được để trống!", "error");
+        return;
+    }
+
+    if (newCode === "") {
+        showAlert("❌ Mã lớp không được để trống!", "error");
+        return;
+    }
+
+    if (newName === "") {
+        showAlert("❌ Tên lớp không được để trống!", "error");
+        return;
+    }
+
+    if (newNameInstructor === "") {
+        showAlert("❌ Tên giảng viên không được để trống!", "error");
+        return;
+    } else if (!/^[A-Za-zÀ-Ỵà-ỵ\s]+$/.test(newNameInstructor)) {
+        showAlert("❌ Tên giảng viên không hợp lệ!", "error");
+        return;
+    }
+
+    if (isNaN(newMaxStudents)) {
+        showAlert("❌ Sức chứa lớp phải là 1 số nguyên từ 10 -> 120!", "error");
+        return;
+    } else if (!Number.isInteger(newMaxStudents)) {
+        showAlert("❌ Sức chứa lớp phải là số nguyên!", "error");
+        return;
+    } else if (newMaxStudents <= 0) {
+        showAlert("❌ Sức chứa lớp không được là số âm!", "error");
+        return;
+    } else if (newMaxStudents < 10 || newMaxStudents > 120) {
+        showAlert("❌ Sức chứa lớp phải từ 10 đến 120 sinh viên!", "error");
+        return;
+    }
+
     const updatedCourse = {
         ...appData.courses[courseIndex],
-        name: document.getElementById("editCourseName").value.trim(),
+        name: newName,
         code: newCode,
         type: document.getElementById("editCourseType").value,
-        instructor: document
-            .getElementById("editCourseInstructor")
-            .value.trim(),
-        maxStudents: parseInt(
-            document.getElementById("editCourseMaxStudents").value
-        ),
+        instructor: newNameInstructor,
+        maxStudents: newMaxStudents,
     };
 
     // Cập nhật mã lớp trong enrollments và pending requests nếu thay đổi

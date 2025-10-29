@@ -51,7 +51,6 @@
                             type="text"
                             id="courseName"
                             placeholder="VD: Tiếng Anh Cơ Bản"
-                            required
                         />
                     </div>
                     <div class="form__group">
@@ -61,12 +60,12 @@
                             type="text"
                             id="courseCode"
                             placeholder="VD: ENG_101"
-                            required
                         />
                     </div>
                     <div class="form__group">
                         <label class="form__label">Loại lớp</label>
-                        <select class="form__select" id="courseType" required>
+                        <select class="form__select" id="courseType">
+                            <option value="">--Chọn loại lớp--</option>
                             <option value="remedial">Tăng Cường</option>
                             <option value="official">Chính Thức</option>
                         </select>
@@ -78,18 +77,15 @@
                             type="text"
                             id="courseInstructor"
                             placeholder="VD: Ms. Johnson"
-                            required
                         />
                     </div>
                     <div class="form__group">
                         <label class="form__label">Sĩ số tối đa</label>
                         <input
                             class="form__input"
-                            type="number"
+                            type="text"
                             id="courseMaxStudents"
-                            min="10"
                             placeholder="30"
-                            required
                         />
                     </div>
                     <div class="form__group">
@@ -491,7 +487,7 @@
                             class="form__input"
                             type="text"
                             id="editCourseName"
-                            required
+                            placeholder="Mời nhập tên lớp"
                         />
                     </div>
                     <div class="form__group" style="margin-bottom: 1rem">
@@ -500,16 +496,12 @@
                             class="form__input"
                             type="text"
                             id="editCourseCode"
-                            required
+                            placeholder="Mời nhập mã lớp"
                         />
                     </div>
                     <div class="form__group" style="margin-bottom: 1rem">
                         <label class="form__label">Loại lớp</label>
-                        <select
-                            class="form__select"
-                            id="editCourseType"
-                            required
-                        >
+                        <select class="form__select" id="editCourseType">
                             <option value="remedial">Tăng Cường</option>
                             <option value="official">Chính Thức</option>
                         </select>
@@ -520,17 +512,16 @@
                             class="form__input"
                             type="text"
                             id="editCourseInstructor"
-                            required
+                            placeholder="Mời nhập tên giảng viên"
                         />
                     </div>
                     <div class="form__group" style="margin-bottom: 1rem">
                         <label class="form__label">Sĩ số tối đa</label>
                         <input
                             class="form__input"
-                            type="number"
+                            type="text"
                             id="editCourseMaxStudents"
-                            min="10"
-                            required
+                            placeholder="Mời nhập sĩ số tối đa"
                         />
                     </div>
                     <button
